@@ -1,0 +1,9 @@
+{
+  "name": "twos",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/js/",
+    "serve": "python3 -m http.server -d site 8000"
+  }
+}
