@@ -91,11 +91,12 @@ python3.12 -m venv .venv
 
 - **Engine:** boards store tile exponents. Every move is a flip or transpose plus a
   lookup into a table of precomputed line slides. Python batches this with NumPy, so
-  the N-tuple network trains on about two thousand games a minute.
+  the N-tuple network trains on tens of thousands of games an hour.
 - **Weights:** exports quantise floats to int16 with one scale per array. For the
-  N-tuple tables, only weights that training touched are shipped, as sorted keys
-  stored as gaps, and the browser looks them up by binary search.
-- **Explanations:** the N-tuple heatmap spreads each active weight over the cells
+  N-tuple tables, only weights larger than 50 points are shipped (a sweep showed no
+  measurable loss in strength, and it cuts the file from 10 MB to 1.6 MB), as
+  sorted keys stored as gaps, which the browser looks up by binary search.
+- **Explanations:** the N-tuple heatmap spreads each active weight over the tiles
   its pattern covers. The neural networks use occlusion: how much the output moves
   when each tile is removed.
 
