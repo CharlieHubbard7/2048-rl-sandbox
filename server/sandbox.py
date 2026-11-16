@@ -50,6 +50,7 @@ class Sandbox:
         self.speed = "10x"
         self.playing = False
         self.decision = None
+        self.last_action = None  # lets the client animate single moves
         self._decision_key = None
         self.trainer = None
         self.bench = None
@@ -106,6 +107,7 @@ class Sandbox:
             "type": "state",
             "board": game.decode(g.board).tolist(),
             "score": g.score, "moves": g.moves, "max_tile": g.max_tile, "done": g.done,
+            "last_action": self.last_action,
             "agent": self.agent_name, "playing": self.playing, "speed": self.speed,
             "training": self.trainer.agent.name if self.trainer else None,
             "decision": None if g.done else decision_json(self.decision),
@@ -123,7 +125,8 @@ class Sandbox:
 
     async def agent_step(self):
         await self._ensure_decision()
-        self.game.step(self.decision.action)
+        self.last_action = self.decision.action
+        self.game.step(self.last_action)
 
     def _headless_burst(self):
         agent, g = self.agent, self.game
@@ -134,6 +137,7 @@ class Sandbox:
     async def _play_loop(self):
         while self.playing and not self.game.done:
             if self.speed == "max":
+                self.last_action = None
                 await asyncio.to_thread(self._headless_burst)
             else:
                 await self.agent_step()
@@ -194,9 +198,11 @@ class Sandbox:
         kind = msg.get("type")
         if kind == "move" and not self.game.done:
             self.playing = False
-            self.game.step(int(msg["action"]))
+            self.last_action = int(msg["action"])
+            self.game.step(self.last_action)
         elif kind == "new_game":
             self.playing = False
+            self.last_action = None
             self.game.reset()
         elif kind == "select_agent" and msg.get("name") in self.agents:
             self.agent_name = msg["name"]

@@ -1,1 +1,106 @@
-<!doctype html><title>2048 RL Sandbox</title><p>UI coming soon</p>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>2048 RL Sandbox</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Sora:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <h1>2048 RL Sandbox</h1>
+    <nav class="agents" id="agents" aria-label="Agent"></nav>
+    <span class="conn" id="conn" title="Server connection">Connecting</span>
+  </header>
+
+  <main class="layout">
+    <section class="play">
+      <div class="scoreline">
+        <div><span class="stat-label">Score</span><strong id="score">0</strong></div>
+        <div><span class="stat-label">Moves</span><strong id="moves">0</strong></div>
+        <div><span class="stat-label">Best tile</span><strong id="maxtile">2</strong></div>
+      </div>
+
+      <div class="board" id="board" aria-label="Game board">
+        <div class="board-cells" id="cells"></div>
+        <div class="board-tiles" id="tiles"></div>
+        <div class="board-heat" id="heat" aria-hidden="true"></div>
+        <div class="board-over" id="over" hidden>
+          <p>No moves left</p>
+          <button data-cmd="new_game">Start a new game</button>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button id="play" class="primary">Watch agent play</button>
+        <button data-cmd="step">Step</button>
+        <button data-cmd="new_game">New game</button>
+        <div class="segmented" id="speed" role="radiogroup" aria-label="Speed">
+          <button data-speed="1x">1x</button>
+          <button data-speed="10x">10x</button>
+          <button data-speed="max">Max</button>
+        </div>
+      </div>
+      <p class="hint">Arrow keys or WASD to play yourself. The panel on the right still shows what the selected agent would do.</p>
+    </section>
+
+    <section class="brain">
+      <h2 id="brain-title">Heuristic</h2>
+      <p class="blurb" id="brain-blurb"></p>
+      <h3 id="bars-label">Afterstate value</h3>
+      <div class="bars" id="bars"></div>
+      <label class="toggle"><input type="checkbox" id="show-heat" checked> Show heatmap on the board</label>
+      <p class="heat-note" id="heat-note"></p>
+    </section>
+
+    <section class="training">
+      <div class="section-head">
+        <h2>Training</h2>
+        <button id="train" class="primary">Start training</button>
+      </div>
+      <p class="blurb" id="train-status">Pick a learning agent to train it live.</p>
+      <div class="kpis">
+        <div><span class="stat-label">Episodes</span><strong id="k-episodes">0</strong></div>
+        <div><span class="stat-label">Avg score, last 100</span><strong id="k-score">–</strong></div>
+        <div><span class="stat-label">Reached 2048</span><strong id="k-win">–</strong></div>
+      </div>
+      <div class="charts">
+        <figure><figcaption>Rolling average score</figcaption><canvas id="c-score"></canvas></figure>
+        <figure><figcaption>Best tile in last 100 games</figcaption><canvas id="c-tile"></canvas></figure>
+        <figure><figcaption id="c-loss-label">Loss</figcaption><canvas id="c-loss"></canvas></figure>
+      </div>
+      <div class="checkpoints">
+        <button id="save">Save weights</button>
+        <select id="ckpt" aria-label="Saved checkpoints"></select>
+        <button id="load">Load</button>
+      </div>
+    </section>
+
+    <section class="arena">
+      <div class="section-head">
+        <h2>Arena</h2>
+        <div class="bench-controls">
+          <label>Games <input type="number" id="bench-games" value="100" min="1" max="1000"></label>
+          <button id="bench" class="primary">Benchmark all agents</button>
+        </div>
+      </div>
+      <p class="blurb">Every agent plays the same seeded games, so differences come from decisions, not lucky spawns.</p>
+      <div class="table-wrap">
+        <table class="results">
+          <thead>
+            <tr><th>Agent</th><th>Mean</th><th>Median</th><th>Best</th><th>Reached 2048</th><th class="dist-col">Final tile distribution</th></tr>
+          </thead>
+          <tbody id="results"></tbody>
+        </table>
+      </div>
+      <div class="legend" id="legend"></div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status" hidden></div>
+  <script type="module" src="/static/js/main.js"></script>
+</body>
+</html>
