@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Twos</title>
+    <meta name="description" content="Slide and merge tiles to reach 2048, then watch a trained model play the same tiles." />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <header class="masthead">
+      <div>
+        <h1 class="wordmark">Twos</h1>
+        <p class="tagline">Slide the tiles, merge equal numbers, reach 2048. A trained model plays the same tiles beside you.</p>
+      </div>
+      <nav class="links">
+        <button type="button" class="link" id="open-about">How it works</button>
+        <a class="link" href="https://github.com/CharlieHubbard7/2048-rl-sandbox">GitHub</a>
+      </nav>
+    </header>
+
+    <main class="arena">
+      <section class="player" aria-labelledby="you-title">
+        <div class="player-head">
+          <h2 id="you-title">You</h2>
+          <div class="scores">
+            <div class="score"><span>Score</span><strong id="you-score">0</strong></div>
+            <div class="score"><span>Best</span><strong id="you-best">0</strong></div>
+          </div>
+        </div>
+        <div class="board" id="you-board" aria-label="Your board"></div>
+        <div class="player-foot">
+          <p class="caption">Use the arrow keys, WASD, or swipe.</p>
+          <button type="button" class="button" id="new-game">New game</button>
+        </div>
+      </section>
+
+      <section class="player" aria-labelledby="ai-title">
+        <div class="player-head">
+          <h2 id="ai-title">AI</h2>
+          <div class="scores">
+            <div class="score"><span>Score</span><strong id="ai-score">0</strong></div>
+          </div>
+        </div>
+        <div class="board" id="ai-board" aria-label="AI board"></div>
+        <div class="player-foot">
+          <label class="model">
+            <span class="visually-hidden">Model</span>
+            <select id="model"></select>
+          </label>
+          <div class="speed" role="radiogroup" aria-label="Speed">
+            <button type="button" role="radio" data-speed="slow" aria-checked="true">Slow</button>
+            <button type="button" role="radio" data-speed="fast" aria-checked="false">Fast</button>
+          </div>
+          <button type="button" class="button button-primary" id="ai-toggle">Start</button>
+        </div>
+
+        <details class="thinking" id="thinking">
+          <summary>Show what it's thinking</summary>
+          <p class="thinking-label" id="thinking-label"></p>
+          <div class="bars" id="bars"></div>
+        </details>
+      </section>
+    </main>
+
+    <dialog class="about" id="about">
+      <form method="dialog"><button class="close" aria-label="Close">×</button></form>
+      <h2>How it works</h2>
+      <div id="about-body"></div>
+    </dialog>
+
+    <script type="module" src="js/main.js"></script>
+  </body>
+</html>
