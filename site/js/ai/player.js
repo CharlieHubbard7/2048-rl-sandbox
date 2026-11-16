@@ -34,7 +34,8 @@ export class AiPlayer {
 
   reset(seed) {
     const resume = this.running;
-    this.stop();
+    this.#run++;
+    this.running = false;
     this.game = new Game(seed);
     this.game.continueAfterWin(); // the AI plays on past 2048
     this.view.reset(this.game);
