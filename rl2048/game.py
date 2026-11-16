@@ -7,6 +7,7 @@ is one table lookup: a row packs into a 16-bit index (4 bits per cell), so all
 
 All functions accept a leading batch dimension, i.e. (..., 4, 4).
 """
+
 import numpy as np
 
 UP, DOWN, LEFT, RIGHT = range(4)

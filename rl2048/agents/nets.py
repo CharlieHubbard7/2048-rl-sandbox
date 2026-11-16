@@ -1,4 +1,5 @@
 """Torch building blocks shared by the DQN and PPO agents."""
+
 import numpy as np
 import torch
 import torch.nn as nn
@@ -39,9 +40,7 @@ class PairConv(nn.Module):
         self.linear = nn.Linear(4 * c_in, c_out)
 
     def forward(self, x):  # (N, C, H, W) -> (N, c_out, H-1, W-1)
-        patches = torch.cat(
-            [x[:, :, :-1, :-1], x[:, :, :-1, 1:], x[:, :, 1:, :-1], x[:, :, 1:, 1:]], dim=1
-        )
+        patches = torch.cat([x[:, :, :-1, :-1], x[:, :, :-1, 1:], x[:, :, 1:, :-1], x[:, :, 1:, 1:]], dim=1)
         return self.linear(patches.permute(0, 2, 3, 1)).permute(0, 3, 1, 2)
 
 

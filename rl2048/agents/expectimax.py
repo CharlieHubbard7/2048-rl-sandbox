@@ -8,6 +8,7 @@ afterstates, so they can't be dropped in without a calibration step.)
 Each tree level is evaluated as one batched numpy call rather than node by
 node, which is what makes depth 2 affordable in Python.
 """
+
 import numpy as np
 
 from .. import game
@@ -47,8 +48,7 @@ class ExpectimaxAgent(BaseAgent):
         if depth == 0:
             return self.leaf.value(afters)
         children, parent, prob = expand_spawns(afters)
-        return np.bincount(parent, weights=prob * self._max(children, depth - 1),
-                           minlength=len(afters))
+        return np.bincount(parent, weights=prob * self._max(children, depth - 1), minlength=len(afters))
 
     def _max(self, boards, depth):
         afters, rewards = game.all_moves(boards)

@@ -4,6 +4,7 @@ Masking illegal moves (rather than penalising them) matters a lot in 2048:
 late-game boards often have only one or two legal moves, and an unmasked
 policy burns most of its probability mass discovering that the hard way.
 """
+
 import numpy as np
 import torch
 import torch.nn as nn
@@ -34,8 +35,19 @@ class PPOAgent(TorchAgent):
     name = "ppo"
     trainable = True
 
-    def __init__(self, lr=3e-4, gamma=0.99, lam=0.95, clip=0.2, n_envs=64, horizon=128,
-                 epochs=4, minibatch=1024, ent_coef=0.01, vf_coef=0.5):
+    def __init__(
+        self,
+        lr=3e-4,
+        gamma=0.99,
+        lam=0.95,
+        clip=0.2,
+        n_envs=64,
+        horizon=128,
+        epochs=4,
+        minibatch=1024,
+        ent_coef=0.01,
+        vf_coef=0.5,
+    ):
         self.net = ActorCritic()
         self.opt = torch.optim.Adam(self.net.parameters(), lr=lr)
         self.gamma, self.lam, self.clip = gamma, lam, clip

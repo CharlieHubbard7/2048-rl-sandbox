@@ -1,7 +1,9 @@
 """Double DQN over one-hot boards, with experience replay and a Polyak-averaged
 target network. Illegal moves are masked out of both action selection and the
 bootstrap max, so the network never wastes capacity learning they're bad."""
+
 import copy
+from collections import deque
 
 import numpy as np
 import torch
@@ -51,8 +53,17 @@ class DQNAgent(TorchAgent):
     name = "dqn"
     trainable = True
 
-    def __init__(self, lr=3e-4, gamma=0.99, batch_size=256, n_envs=32,
-                 buffer_size=200_000, warmup=5_000, eps_decay_steps=150_000, tau=0.005):
+    def __init__(
+        self,
+        lr=3e-4,
+        gamma=0.99,
+        batch_size=256,
+        n_envs=32,
+        buffer_size=200_000,
+        warmup=5_000,
+        eps_decay_steps=150_000,
+        tau=0.005,
+    ):
         self.net = QNet()
         self.target = copy.deepcopy(self.net).requires_grad_(False)
         self.opt = torch.optim.Adam(self.net.parameters(), lr=lr)
@@ -84,7 +95,7 @@ class DQNAgent(TorchAgent):
         rng = np.random.default_rng(seed)
         env = BatchEnv(self.n_envs, seed)
         buf = ReplayBuffer(self.buffer_size)
-        losses = []
+        losses = deque(maxlen=100)
         while True:
             boards, masks = env.boards.copy(), env.masks.copy()
             actions = self._explore(boards, masks, rng)
@@ -93,7 +104,7 @@ class DQNAgent(TorchAgent):
             self.steps += self.n_envs
 
             if buf.size >= self.warmup:
-                losses = (losses + [self._update(buf, rng)])[-100:]
+                losses.append(self._update(buf, rng))
             for ep in info["finished"]:
                 loss = float(np.mean(losses)) if losses else None
                 yield {**ep, "loss": loss, "epsilon": self.epsilon}
@@ -121,7 +132,7 @@ class DQNAgent(TorchAgent):
         self.opt.step()
 
         with torch.no_grad():
-            for p, tp in zip(self.net.parameters(), self.target.parameters()):
+            for p, tp in zip(self.net.parameters(), self.target.parameters(), strict=True):
                 tp.lerp_(p, self.tau)
         return loss.item()
 

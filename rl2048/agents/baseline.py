@@ -1,4 +1,5 @@
 """Non-learning reference points: uniform random, and a greedy heuristic."""
+
 import numpy as np
 
 from .. import game
@@ -21,10 +22,7 @@ class RandomAgent(BaseAgent):
 # big exponents early on the path keeps the largest tile pinned in the corner
 # with a descending chain behind it, which is what keeps merges available.
 _SNAKE = np.array(
-    [[15, 14, 13, 12],
-     [8, 9, 10, 11],
-     [7, 6, 5, 4],
-     [0, 1, 2, 3]],
+    [[15, 14, 13, 12], [8, 9, 10, 11], [7, 6, 5, 4], [0, 1, 2, 3]],
     dtype=np.float64,
 )
 POSITION_WEIGHTS = 0.8 ** (15 - _SNAKE)

@@ -5,6 +5,7 @@
 Checkpoints land in checkpoints/ with the same naming the sandbox uses, so
 the server picks up the newest one automatically on its next start.
 """
+
 import argparse
 import time
 from collections import deque
@@ -19,7 +20,9 @@ CHECKPOINTS = Path(__file__).resolve().parent.parent / "checkpoints"
 
 def main():
     agents = {n: a for n, a in build_agents().items() if a.trainable}
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
     parser.add_argument("agent", choices=sorted(agents))
     parser.add_argument("--minutes", type=float, default=5.0)
     parser.add_argument("--resume", type=Path, help="checkpoint to continue from")
@@ -39,8 +42,10 @@ def main():
             tiles.append(stats["max_tile"])
             if time.time() - last_report > 10:
                 last_report = time.time()
-                print(f"episode {episode:>7}  avg {np.mean(scores):>8.0f}  "
-                      f"2048 rate {np.mean(np.array(tiles) >= 2048):5.1%}  best tile {max(tiles)}")
+                print(
+                    f"episode {episode:>7}  avg {np.mean(scores):>8.0f}  "
+                    f"2048 rate {np.mean(np.array(tiles) >= 2048):5.1%}  best tile {max(tiles)}"
+                )
             if time.time() > deadline:
                 break
     except KeyboardInterrupt:

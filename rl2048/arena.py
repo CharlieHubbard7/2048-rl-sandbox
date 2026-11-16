@@ -1,4 +1,5 @@
 """Head-to-head evaluation of agents over many seeded games."""
+
 from collections import Counter
 
 import numpy as np

@@ -1,4 +1,5 @@
 """Stateful wrappers around the pure functions in `game`."""
+
 import numpy as np
 
 from . import game
@@ -87,8 +88,7 @@ class BatchEnv:
         if dones.any():
             done_idx = np.flatnonzero(dones)
             for i in done_idx:
-                finished.append({"score": int(self.scores[i]),
-                                 "max_tile": 1 << int(self.boards[i].max())})
+                finished.append({"score": int(self.scores[i]), "max_tile": 1 << int(self.boards[i].max())})
             terminal = self.boards[done_idx].copy()
             self._reset(done_idx)
         else:

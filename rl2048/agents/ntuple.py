@@ -6,6 +6,7 @@ It's a linear function over a huge sparse feature space, which is why it
 learns 2048 so much faster than a neural net: each update touches only the
 32 weights that actually describe the board.
 """
+
 import numpy as np
 
 from .. import game
@@ -105,8 +106,12 @@ class NTupleAgent(BaseAgent):
         # The table is mostly zeros, so store it sparsely.
         flat = self.lut.ravel()
         nz = np.flatnonzero(flat)
-        return {"alpha": self.alpha, "episodes": self.episodes,
-                "index": nz.astype(np.int64), "weight": flat[nz]}
+        return {
+            "alpha": self.alpha,
+            "episodes": self.episodes,
+            "index": nz.astype(np.int64),
+            "weight": flat[nz],
+        }
 
     def load_state_dict(self, state):
         self.alpha = state["alpha"]

@@ -106,7 +106,7 @@ def test_batch_env_runs_and_resets():
     finished = []
     for _ in range(3000):
         actions = np.array([rng.choice(np.flatnonzero(m)) for m in env.masks])
-        boards, rewards, dones, info = env.step(actions)
+        *_, info = env.step(actions)
         finished += info["finished"]
         assert env.masks.any(axis=1).all()  # every live game has a legal move
     assert finished and all(f["max_tile"] >= 8 for f in finished)
