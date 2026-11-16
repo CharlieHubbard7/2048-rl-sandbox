@@ -197,3 +197,144 @@ select {
   border-color: #33415a;
   background: #33415a;
 }
+
+/* ---- Board ----------------------------------------------------------------- */
+
+.board {
+  position: relative;
+  width: var(--board);
+  height: var(--board);
+  border-radius: calc(var(--radius) * 1.6);
+  background: var(--well);
+  box-shadow: 0 1px 2px rgb(29 39 56 / 6%), 0 8px 24px rgb(29 39 56 / 6%);
+  touch-action: none;
+  user-select: none;
+}
+
+.board-grid,
+.board-tiles,
+.board-heat {
+  position: absolute;
+  inset: 0;
+}
+
+.board-grid {
+  display: grid;
+  grid-template-columns: repeat(4, var(--cell));
+  gap: var(--gap);
+  padding: var(--gap);
+}
+
+.board-cell {
+  border-radius: var(--radius);
+  background: var(--cell-bg);
+}
+
+/* Tiles are positioned by --x/--y so a move is just a transform transition.
+   The inner face carries the colour and the pop animations, which keeps
+   scaling separate from sliding. */
+.tile,
+.board-heat span {
+  position: absolute;
+  top: var(--gap);
+  left: var(--gap);
+  width: var(--cell);
+  height: var(--cell);
+  transform: translate(
+    calc(var(--x) * (var(--cell) + var(--gap))),
+    calc(var(--y) * (var(--cell) + var(--gap)))
+  );
+}
+
+.tile {
+  z-index: 1;
+  transition: transform var(--slide) ease-in-out;
+}
+
+.tile-face {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius);
+  background: var(--tile-bg);
+  color: var(--tile-fg);
+  font-size: calc(var(--cell) * 0.4);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.tile-face[data-digits="3"] { font-size: calc(var(--cell) * 0.33); }
+.tile-face[data-digits="4"] { font-size: calc(var(--cell) * 0.26); }
+.tile-face[data-digits="5"] { font-size: calc(var(--cell) * 0.21); }
+
+/* Small tiles are cool slate and blue, the middle of the game warms into
+   coral, and 2048 onward turns to ink. */
+.tile-face[data-exp="1"] { --tile-bg: #e6ebf2; --tile-fg: #33415a; }
+.tile-face[data-exp="2"] { --tile-bg: #d3dce8; --tile-fg: #33415a; }
+.tile-face[data-exp="3"] { --tile-bg: #b4c6de; --tile-fg: #233049; }
+.tile-face[data-exp="4"] { --tile-bg: #8eaad3; --tile-fg: #fff; }
+.tile-face[data-exp="5"] { --tile-bg: #6c8fc6; --tile-fg: #fff; }
+.tile-face[data-exp="6"] { --tile-bg: #4b73b5; --tile-fg: #fff; }
+.tile-face[data-exp="7"] { --tile-bg: #f0b9a6; --tile-fg: #5a2618; }
+.tile-face[data-exp="8"] { --tile-bg: #ea9c82; --tile-fg: #fff; }
+.tile-face[data-exp="9"] { --tile-bg: #e2805f; --tile-fg: #fff; }
+.tile-face[data-exp="10"] { --tile-bg: #d9694f; --tile-fg: #fff; }
+.tile-face[data-exp="11"] { --tile-bg: #1d2738; --tile-fg: #fff; }
+.tile-face[data-exp="12"] { --tile-bg: #0f1520; --tile-fg: #f0b9a6; }
+
+.tile-face.appear {
+  animation: appear 180ms ease-out backwards;
+}
+
+.tile-face.merge {
+  animation: merge 180ms ease-out;
+}
+
+@keyframes appear {
+  from {
+    transform: scale(0.2);
+    opacity: 0;
+  }
+}
+
+@keyframes merge {
+  50% {
+    transform: scale(1.12);
+  }
+}
+
+/* ---- Overlay message ------------------------------------------------------- */
+
+.board-message {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 16px;
+  border-radius: inherit;
+  background: rgb(238 241 245 / 82%);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 240ms ease, visibility 0s 240ms;
+}
+
+.board-message.is-visible {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 240ms ease 120ms;
+}
+
+.board-message-title {
+  margin: 0;
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.board-message-actions {
+  display: flex;
+  gap: 8px;
+}
