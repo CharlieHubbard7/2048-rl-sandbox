@@ -46,7 +46,8 @@ def write_bundle(path, arrays, meta=None):
     header = json.dumps({"meta": meta or {}, "arrays": entries}).encode()
     header += b" " * (-len(header) % 4)
     payload = len(header).to_bytes(4, "little") + header + b"".join(blobs)
-    with gzip.open(path, "wb", compresslevel=9) as f:
+    # mtime=0 keeps the bytes identical across re-exports of the same weights.
+    with open(path, "wb") as raw, gzip.GzipFile(fileobj=raw, mode="wb", compresslevel=9, mtime=0) as f:
         f.write(payload)
 
 
