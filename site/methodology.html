@@ -375,6 +375,115 @@
         Learning alone scored five and a half times my heuristic, and adding a shallow search on top doubled
         that again.
       </p>
+
+      <h2>Version two: a game first</h2>
+      <p>
+        With the models working, I went back to the problem with version one. I wanted someone to land on the
+        page and simply play: no panels, no charts, nothing to read first. So I rebuilt it around the game.
+        Your board is on the left. A model plays its own board on the right. Everything the dashboard used to
+        show is still there, behind a single "Show what it's thinking" toggle.
+      </p>
+      <figure>
+        <img src="img/methodology/v2-site.webp" alt="The current site: your board on the left at 44 points, the AI's board on the right at about 12,000 points with a 1024 tile, and the AI's move ratings open below it." loading="lazy" />
+        <figcaption>The page as it is now. The model has been playing for under a minute.</figcaption>
+      </figure>
+      <p>
+        One detail I'm proud of: both boards draw their new tiles from the same seeded random sequence. You
+        and the model get the same luck, as far as two different games allow, so the comparison means
+        something. Press New game and both boards restart from one new seed. And when the model finishes, Run
+        again replays the exact same tiles, which makes switching models a fair head-to-head.
+      </p>
+      <div class="figure-pair">
+        <figure>
+          <img src="img/methodology/v2-thinking.webp" alt="The AI board with a soft glow on three tiles, and bars rating each move: up 33.9k, down 33.9k, left 26.9k, right 34.0k, with right highlighted." loading="lazy" />
+          <figcaption>Open the panel and you see each move's rating before it's played, plus a glow on the tiles that drove the choice.</figcaption>
+        </figure>
+        <figure>
+          <img src="img/methodology/v2-win.webp" alt="Your board with a 2048 tile and the message 'You made 2048', with Keep going and New game buttons." loading="lazy" />
+          <figcaption>The rules and flow match the original game, including the choice to keep going after 2048.</figcaption>
+        </figure>
+      </div>
+      <p>
+        For the glow, each model explains itself in its own terms. For the N-tuple models, every active table
+        weight is spread over the tiles its pattern covers. For the neural networks I use occlusion: take one
+        tile away, run the network again, and see how much its answer moves.
+      </p>
+
+      <h3>Running every model in your browser</h3>
+      <p>
+        Version one needed a Python server for every move. Version two has no server at all. I trained the
+        models in Python, exported their weights to small files, and rewrote the game and all five players in
+        plain JavaScript that runs in a background thread (a web worker), so the animations never stutter while
+        the search is thinking. The neural network forward pass is about a hundred lines with no libraries, and
+        because the input is one-hot, its first layer doesn't even multiply: each tile just selects a column of
+        weights.
+      </p>
+      <figure>
+        <img src="img/methodology/pipeline.svg" alt="Pipeline diagram: train in Python, export with pruning, int16 quantisation and gzip, ship the files with the site, run them in a JavaScript web worker, play in the browser. Parity tests span export to worker." loading="lazy" />
+        <figcaption>Two implementations of everything, held together by tests.</figcaption>
+      </figure>
+      <p>
+        Two implementations of the same thing will drift apart unless something stops them. So the exporter
+        also writes test cases: real positions, with Python's answers for every move, every board value,
+        every search result and every network output, computed from the exact weights the browser downloads.
+        The JavaScript tests have to reproduce all of them, and they run on every push.
+      </p>
+
+      <h3>Fitting the model through a phone connection</h3>
+      <p>
+        The full N-tuple tables would be 268 MB. Training only ever touches a fraction of the entries, so I
+        ship just those: sorted keys stored as the gaps between them, which compress well, and weights stored
+        as 16-bit integers with one scale per table. That still left 10 MB. So I ran a sweep, dropping every
+        weight below a threshold and measuring the search at each step. The answer surprised me: weights under
+        50 points are close to noise. Dropping them cut the file to 1.6 MB with no measurable loss in strength.
+      </p>
+      <figure>
+        <img src="img/methodology/pruning.svg" alt="Line chart of mean search score against file size: from 10.2 MB down to 1.6 MB the score stays between about 91,000 and 104,000." loading="lazy" />
+        <figcaption>Each point drops more small weights. The score barely moves while the file shrinks by 84%.</figcaption>
+      </figure>
+      <figure class="figure-narrow">
+        <img src="img/methodology/v2-mobile.webp" alt="The site on a phone: the Twos title, a short description, links, and your board with a swipe hint." loading="lazy" />
+        <figcaption>On a phone the boards stack and you swipe to move.</figcaption>
+      </figure>
+
+      <h2>What I'd tell myself at the start</h2>
+      <ul>
+        <li>
+          <strong>Build the boring parts first, and test them.</strong> The merge rules hide more edge cases
+          than you'd think. Every model after that stood on them, and so did the browser port.
+        </li>
+        <li>
+          <strong>Search and learning beat either one alone.</strong> The best player here is a shallow
+          search with learned judgement at the leaves.
+        </li>
+        <li>
+          <strong>Structure beats size.</strong> A model that knows which cells to look at learned in minutes
+          what the neural networks hadn't learned in half an hour.
+        </li>
+        <li>
+          <strong>Measure before guessing.</strong> I was sure the slow DQN was my fault, and sure every weight
+          mattered. Profiling and a sweep said otherwise both times.
+        </li>
+        <li>
+          <strong>Build for the person using it.</strong> Version one was the right tool for me and the wrong
+          page for everyone else.
+        </li>
+      </ul>
+
+      <h2>What's next</h2>
+      <p>
+        The N-tuple network was still improving when I stopped it, so the obvious next step is to train longer,
+        and to try the multi-stage version from the Yeh paper, which uses separate tables for the early and
+        late game. I'd also like to give the neural networks a fair rematch with equal training time and a few
+        upgrades, like multi-step returns, and see how close they can get. And if a deeper search can stay fast
+        enough in the browser, I want to know how often it reaches 8192.
+      </p>
+
+      <nav class="article-end" aria-label="More">
+        <a href="./">Play Twos</a>
+        <a href="https://github.com/CharlieHubbard7/2048-rl-sandbox">Read the code</a>
+        <a href="https://github.com/CharlieHubbard7/2048-rl-sandbox/tree/main/docs/training-logs">See the training logs</a>
+      </nav>
     </article>
   </body>
 </html>

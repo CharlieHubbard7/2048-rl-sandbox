@@ -186,11 +186,19 @@
 }
 
 .article-end {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
   margin-top: 72px;
   padding-top: 24px;
   border-top: 1px solid var(--line);
-  color: var(--muted);
   font-size: 15px;
+  font-weight: 600;
+}
+
+.figure-narrow img {
+  max-width: 360px;
+  margin: 0 auto;
 }
 
 @media (max-width: 860px) {
