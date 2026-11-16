@@ -5,6 +5,8 @@ same tiles on the board next to you.
 
 **[Play it here](https://charliehubbard7.github.io/2048-rl-sandbox/)**
 
+![Your board on the left, the model's board on the right, with its move ratings open](docs/screenshot.png)
+
 Five models are included, from a hand-written heuristic to reinforcement learning
 with search on top. All of them run client-side: the models were trained in Python,
 exported to small weight files, and re-implemented in plain JavaScript, with no
