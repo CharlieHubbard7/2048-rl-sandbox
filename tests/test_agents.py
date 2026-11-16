@@ -48,3 +48,33 @@ def test_ntuple_checkpoint_roundtrip(tmp_path):
     clone = NTupleAgent()
     clone.load(tmp_path / "nt.pkl")
     assert np.array_equal(agent.lut, clone.lut)
+
+
+def test_pair_conv_matches_conv2d():
+    import torch
+
+    from rl2048.agents.nets import PairConv
+
+    pc, conv = PairConv(3, 5), torch.nn.Conv2d(3, 5, kernel_size=2)
+    # Conv2d weights are (out, in, kh, kw); PairConv stacks patches as
+    # [top-left, top-right, bottom-left, bottom-right] blocks of channels.
+    w = conv.weight.detach()
+    pc.linear.weight.data = torch.cat([w[:, :, 0, 0], w[:, :, 0, 1], w[:, :, 1, 0], w[:, :, 1, 1]], 1)
+    pc.linear.bias.data = conv.bias.detach().clone()
+    x = torch.randn(2, 3, 4, 4)
+    assert torch.allclose(pc(x), conv(x), atol=1e-5)
+
+
+def test_dqn_trains_and_explains(tmp_path):
+    from itertools import islice
+
+    from rl2048.agents.dqn import DQNAgent
+
+    agent = DQNAgent(n_envs=8, warmup=256, batch_size=32)
+    stats = list(islice(agent.train(seed=0), 3))
+    assert stats[-1]["epsilon"] < 1.0
+
+    d = agent.decide(game.encode([[2, 4, 8, 16], [0] * 4, [0] * 4, [0] * 4]))
+    assert d.kind == "q" and d.heatmap.shape == (4, 4)
+    agent.save(tmp_path / "dqn.pt")
+    DQNAgent().load(tmp_path / "dqn.pt")
