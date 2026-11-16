@@ -116,14 +116,15 @@ export class BoardView {
     this.message.classList.remove("is-visible");
   }
 
-  // Values are rescaled to 0..1 so the glow shows relative attention.
+  // Values are rescaled to 0..1 so the glow shows relative attention, then
+  // squared so only the cells that really mattered stand out.
   setHeat(values) {
     if (!this.heat) return;
     const lo = values ? Math.min(...values) : 0;
     const hi = values ? Math.max(...values) : 0;
     this.heatCells.forEach((cell, i) => {
       const h = values && hi > lo ? (values[i] - lo) / (hi - lo) : 0;
-      cell.style.setProperty("--h", h.toFixed(3));
+      cell.style.setProperty("--h", (h * h).toFixed(3));
     });
   }
 }
