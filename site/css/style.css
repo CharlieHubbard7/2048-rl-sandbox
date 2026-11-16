@@ -1,7 +1,7 @@
 :root {
   --page: #eef1f5;
   --well: #ffffff;
-  --cell-bg: #e3e8ef;
+  --cell-bg: #edf0f4;
   --ink: #1d2738;
   --muted: #687488;
   --line: #d5dce6;
@@ -13,6 +13,8 @@
   --gap: calc(var(--board) * 0.03);
   --cell: calc((var(--board) - 5 * var(--gap)) / 4);
   --radius: calc(var(--cell) * 0.1);
+  --column-gap: 72px;
+  --content: calc(2 * var(--board) + var(--column-gap));
   --slide: 100ms;
 }
 
@@ -67,7 +69,7 @@ select {
   justify-content: space-between;
   align-items: flex-start;
   gap: 24px;
-  max-width: 920px;
+  max-width: calc(var(--content) + 32px);
   margin: 0 auto;
   padding: 48px 16px 32px;
 }
@@ -111,8 +113,8 @@ select {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 48px 72px;
-  max-width: 920px;
+  gap: 48px var(--column-gap);
+  max-width: calc(var(--content) + 32px);
   margin: 0 auto;
   padding: 0 16px 64px;
 }
@@ -270,9 +272,9 @@ select {
 
 /* Small tiles are cool slate and blue, the middle of the game warms into
    coral, and 2048 onward turns to ink. */
-.tile-face[data-exp="1"] { --tile-bg: #e6ebf2; --tile-fg: #33415a; }
-.tile-face[data-exp="2"] { --tile-bg: #d3dce8; --tile-fg: #33415a; }
-.tile-face[data-exp="3"] { --tile-bg: #b4c6de; --tile-fg: #233049; }
+.tile-face[data-exp="1"] { --tile-bg: #d9e0eb; --tile-fg: #33415a; }
+.tile-face[data-exp="2"] { --tile-bg: #c3d0e2; --tile-fg: #33415a; }
+.tile-face[data-exp="3"] { --tile-bg: #a6bddc; --tile-fg: #233049; }
 .tile-face[data-exp="4"] { --tile-bg: #8eaad3; --tile-fg: #fff; }
 .tile-face[data-exp="5"] { --tile-bg: #6c8fc6; --tile-fg: #fff; }
 .tile-face[data-exp="6"] { --tile-bg: #4b73b5; --tile-fg: #fff; }
