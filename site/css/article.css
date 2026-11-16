@@ -1,0 +1,215 @@
+/* Long-form pages (the methodology write-up). Builds on the tokens in style.css. */
+
+.article-nav {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 24px;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 32px 16px 0;
+}
+
+.article-nav .wordmark {
+  font-size: 28px;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.article {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 48px 16px 96px;
+  font-size: 18px;
+  line-height: 1.7;
+}
+
+.article > header {
+  margin-bottom: 48px;
+}
+
+.article h1 {
+  font-size: clamp(36px, 6vw, 52px);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.035em;
+}
+
+.dek {
+  margin: 16px 0 0;
+  color: var(--muted);
+  font-size: 20px;
+  line-height: 1.5;
+}
+
+.article h2 {
+  margin: 72px 0 8px;
+  font-size: 30px;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.025em;
+}
+
+.article h3 {
+  margin: 44px 0 4px;
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.article p,
+.article li {
+  color: #2b3548;
+}
+
+.article a {
+  color: var(--ink);
+  text-decoration-color: #b4c1d3;
+  text-underline-offset: 3px;
+}
+
+.article a:hover {
+  text-decoration-color: var(--accent);
+}
+
+.article code {
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: #e4e9f0;
+  font-size: 0.88em;
+}
+
+.article blockquote {
+  margin: 32px 0;
+  padding: 4px 0 4px 24px;
+  border-left: 3px solid var(--accent);
+  font-size: 21px;
+  line-height: 1.5;
+}
+
+.article blockquote p {
+  margin: 0;
+  color: var(--ink);
+}
+
+.article blockquote cite {
+  display: block;
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 15px;
+  font-style: normal;
+}
+
+/* Figures sit slightly wider than the text column on large screens. */
+.article figure {
+  margin: 36px -40px;
+}
+
+.article figure img,
+.article figure iframe {
+  display: block;
+  width: 100%;
+  border-radius: 12px;
+  background: var(--well);
+  box-shadow: 0 1px 2px rgb(29 39 56 / 6%), 0 8px 24px rgb(29 39 56 / 6%);
+}
+
+.article figure iframe {
+  aspect-ratio: 16 / 9;
+  border: 0;
+}
+
+.article figcaption {
+  margin: 12px 40px 0;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.figure-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+/* The "loss function" box under each algorithm. */
+.loss {
+  margin: 24px 0;
+  padding: 20px 24px;
+  border-radius: 12px;
+  background: var(--well);
+}
+
+.loss h4 {
+  margin: 0 0 8px;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.loss p {
+  margin: 8px 0 0;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.loss math {
+  display: block;
+  margin: 12px 0;
+  font-size: 1.15em;
+  overflow-x: auto;
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin: 24px 0;
+  padding: 0;
+  list-style: none;
+}
+
+.facts li {
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: var(--well);
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.facts strong {
+  display: block;
+  color: var(--ink);
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.article-end {
+  margin-top: 72px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 15px;
+}
+
+@media (max-width: 860px) {
+  .article figure {
+    margin: 32px 0;
+  }
+
+  .article figcaption {
+    margin: 10px 0 0;
+  }
+}
+
+@media (max-width: 560px) {
+  .article {
+    font-size: 17px;
+  }
+
+  .figure-pair,
+  .facts {
+    grid-template-columns: 1fr;
+  }
+}
