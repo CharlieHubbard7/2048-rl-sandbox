@@ -20,6 +20,12 @@ def one_hot(boards):
     return F.one_hot(b, 16).permute(0, 3, 1, 2).float()
 
 
+def shape_reward(r):
+    # Raw merge scores grow exponentially with tile size, which makes Q
+    # targets explode late in a game. log2 keeps every merge in a 1..16 band.
+    return np.log2(1.0 + r) / 4.0
+
+
 class PairConv(nn.Module):
     """A 2x2, stride-1 convolution written as a Linear over stacked patches.
 

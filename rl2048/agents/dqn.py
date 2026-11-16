@@ -11,7 +11,7 @@ import torch.nn.functional as F
 from .. import game
 from ..env import BatchEnv
 from .base import Decision, masked_argmax, with_nans
-from .nets import ConvTrunk, TorchAgent, one_hot, saliency
+from .nets import ConvTrunk, TorchAgent, one_hot, saliency, shape_reward
 
 
 class QNet(nn.Module):
@@ -45,12 +45,6 @@ class ReplayBuffer:
     def sample(self, n, rng):
         i = rng.integers(0, self.size, n)
         return self.s[i], self.a[i], self.r[i], self.s2[i], self.done[i], self.mask2[i]
-
-
-def shape_reward(r):
-    # Raw merge scores grow exponentially with tile size, which makes Q
-    # targets explode late in a game. log2 keeps every merge in a 1..16 band.
-    return np.log2(1.0 + r) / 4.0
 
 
 class DQNAgent(TorchAgent):

@@ -78,3 +78,18 @@ def test_dqn_trains_and_explains(tmp_path):
     assert d.kind == "q" and d.heatmap.shape == (4, 4)
     agent.save(tmp_path / "dqn.pt")
     DQNAgent().load(tmp_path / "dqn.pt")
+
+
+def test_ppo_masks_illegal_moves_and_updates():
+    from itertools import islice
+
+    from rl2048.agents.ppo import PPOAgent
+
+    agent = PPOAgent(n_envs=16, horizon=32, minibatch=128)
+    board = game.encode([[2, 4, 8, 16], [0] * 4, [0] * 4, [0] * 4])
+    d = agent.decide(board)
+    assert d.kind == "prob" and np.isnan(d.values[game.UP])
+    assert np.isclose(np.nansum(d.values), 1.0, atol=1e-5)
+
+    stats = list(islice(agent.train(seed=0), 40))
+    assert agent.updates >= 1 and stats[-1]["loss"] is not None
