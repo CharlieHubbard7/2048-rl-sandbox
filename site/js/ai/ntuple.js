@@ -43,12 +43,14 @@ export class NTupleNetwork {
     return total;
   }
 
-  // Each active weight spread evenly over the cells its tuple covers.
+  // Each active weight spread evenly over the tiles its tuple covers. Empty
+  // cells get nothing, so the glow always lands on actual tiles.
   heat(board) {
     const heat = new Array(16).fill(0);
     for (let f = 0; f < this.cells.length; f++) {
-      const share = this.#weight(f, board) / this.cells[f].length;
-      for (const cell of this.cells[f]) heat[cell] += share;
+      const tiles = this.cells[f].filter((cell) => board[cell]);
+      const share = this.#weight(f, board) / (tiles.length || 1);
+      for (const cell of tiles) heat[cell] += share;
     }
     return heat;
   }
