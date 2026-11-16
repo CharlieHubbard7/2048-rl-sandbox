@@ -13,6 +13,7 @@ from pathlib import Path
 import numpy as np
 
 from . import game
+from .agents.baseline import heuristic
 
 ROOT = Path(__file__).resolve().parent.parent
 FIXTURES = ROOT / "tests" / "js" / "fixtures"
@@ -36,6 +37,7 @@ def export_engine_fixtures(n=400, seed=0):
             "after": [a.ravel().tolist() for a in after],
             "reward": r.tolist(),
             "legal": game.valid_mask(b).tolist(),
+            "heuristic": [round(float(h), 6) for h in heuristic(after)],
         }
         for b, after, r in zip(boards, afters, rewards, strict=True)
     ]
