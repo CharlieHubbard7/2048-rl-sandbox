@@ -168,7 +168,10 @@ def main():
     )
     parser.add_argument("what", choices=["fixtures", "models"])
     parser.add_argument(
-        "--min-weight", type=float, default=0.0, help="drop n-tuple weights at or below this size"
+        "--min-weight",
+        type=float,
+        default=50.0,
+        help="drop n-tuple weights at or below this size; up to ~50 points costs no measurable strength",
     )
     args = parser.parse_args()
 
