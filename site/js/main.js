@@ -136,3 +136,5 @@ youView.reset(you);
 showYou();
 ai.reset(seed);
 setSpeed(ai.speed);
+
+$("open-about").addEventListener("click", () => $("about").showModal());

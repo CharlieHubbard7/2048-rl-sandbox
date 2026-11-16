@@ -470,3 +470,79 @@ select {
     0 0 calc(var(--h, 0) * 18px) rgb(217 105 79 / calc(var(--h, 0) * 35%));
   transition: box-shadow 160ms ease-out;
 }
+
+/* ---- About dialog ---------------------------------------------------------- */
+
+.about {
+  width: min(560px, calc(100vw - 32px));
+  max-height: calc(100vh - 64px);
+  padding: 32px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--well);
+  color: var(--ink);
+  box-shadow: 0 24px 64px rgb(29 39 56 / 20%);
+}
+
+.about::backdrop {
+  background: rgb(29 39 56 / 35%);
+}
+
+.about h2 {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.about h3 {
+  margin: 24px 0 8px;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.about p,
+.about dd {
+  color: #45516a;
+  line-height: 1.6;
+}
+
+.about a {
+  color: var(--ink);
+}
+
+.models {
+  margin: 0;
+}
+
+.models dt {
+  margin-top: 14px;
+  font-weight: 700;
+}
+
+.models dd {
+  margin: 2px 0 0;
+}
+
+.about-foot {
+  margin-top: 24px;
+  font-size: 14px;
+}
+
+.close {
+  float: right;
+  width: 32px;
+  height: 32px;
+  margin: -12px -12px 0 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--muted);
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.close:hover {
+  background: var(--cell-bg);
+  color: var(--ink);
+}

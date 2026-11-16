@@ -70,7 +70,35 @@
     <dialog class="about" id="about">
       <form method="dialog"><button class="close" aria-label="Close">×</button></form>
       <h2>How it works</h2>
-      <div id="about-body"></div>
+      <p>
+        The rules are the classic ones. Each move slides every tile as far as it goes, equal tiles merge
+        once, and a 2 or a 4 appears in an empty cell. Both boards draw new tiles from the same random
+        sequence, so you and the AI share the luck as evenly as the game allows.
+      </p>
+      <h3>The models</h3>
+      <dl class="models">
+        <dt>Search + N-tuple</dt>
+        <dd>Looks one or two moves ahead, averaging over every tile that could appear, and judges the
+          positions it reaches with the N-tuple network.</dd>
+        <dt>N-tuple network</dt>
+        <dd>Learned by playing tens of thousands of games against itself. It values a board by looking up
+          groups of six cells in large learned tables, a classic reinforcement learning approach for this game.</dd>
+        <dt>PPO</dt>
+        <dd>A neural network policy trained with proximal policy optimization. It gives each move a probability.</dd>
+        <dt>Deep Q-network</dt>
+        <dd>A neural network that predicts how many points each move leads to, trained on replayed experience.</dd>
+        <dt>Heuristic</dt>
+        <dd>No learning at all: a hand-written rule that likes empty cells and big tiles kept in one corner.</dd>
+      </dl>
+      <h3>What it's thinking</h3>
+      <p>
+        The bars show how the model rated each move before choosing. The glow on its board marks the tiles
+        that most influenced the decision.
+      </p>
+      <p class="about-foot">
+        Everything runs in your browser. The models were trained in Python with NumPy and PyTorch, and the
+        code is <a href="https://github.com/CharlieHubbard7/2048-rl-sandbox">on GitHub</a>.
+      </p>
     </dialog>
 
     <script type="module" src="js/main.js"></script>
