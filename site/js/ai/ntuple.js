@@ -5,6 +5,12 @@
 // table: a lookup is a binary search and a missing key means weight zero.
 import { DIRECTIONS, move } from "../engine.js";
 
+// Keys ship as gaps between consecutive sorted keys; rebuild them in place.
+function undelta(gaps) {
+  for (let i = 1; i < gaps.length; i++) gaps[i] += gaps[i - 1];
+  return gaps;
+}
+
 export class NTupleNetwork {
   constructor({ meta, arrays }) {
     // Cell indices for every (pattern, symmetry) pair come from the export,
@@ -13,7 +19,7 @@ export class NTupleNetwork {
     this.tableOf = meta.table_of;
     this.tables = meta.table_of
       .filter((t, i, all) => all.indexOf(t) === i)
-      .map((t) => ({ keys: arrays[`keys${t}`], values: arrays[`values${t}`] }));
+      .map((t) => ({ keys: undelta(arrays[`keys${t}`]), values: arrays[`values${t}`] }));
   }
 
   #weight(feature, board) {
