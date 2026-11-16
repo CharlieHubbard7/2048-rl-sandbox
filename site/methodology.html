@@ -218,9 +218,11 @@
         <h4>Loss function: the TD error</h4>
         <math display="block">
           <mi>δ</mi><mo>=</mo><msub><mi>r</mi><mrow><mi>t</mi><mo>+</mo><mn>1</mn></mrow></msub><mo>+</mo>
-          <mi>V</mi><mo>(</mo><msubsup><mi>s</mi><mrow><mi>t</mi><mo>+</mo><mn>1</mn></mrow><mo>′</mo></msubsup><mo>)</mo>
-          <mo>−</mo><mi>V</mi><mo>(</mo><msubsup><mi>s</mi><mi>t</mi><mo>′</mo></msubsup><mo>)</mo>
-          <mspace width="2em" /><mi>L</mi><mo>=</mo><mfrac><mn>1</mn><mn>2</mn></mfrac><msup><mi>δ</mi><mn>2</mn></msup>
+          <mi>V</mi><mo stretchy="false">(</mo><msubsup><mi>s</mi><mrow><mi>t</mi><mo>+</mo><mn>1</mn></mrow><mo>′</mo></msubsup><mo stretchy="false">)</mo>
+          <mo>−</mo><mi>V</mi><mo stretchy="false">(</mo><msubsup><mi>s</mi><mi>t</mi><mo>′</mo></msubsup><mo stretchy="false">)</mo>
+        </math>
+        <math display="block">
+          <mi>L</mi><mo>=</mo><mfrac><mn>1</mn><mn>2</mn></mfrac><msup><mi>δ</mi><mn>2</mn></msup>
         </math>
         <p>
           <i>s′</i> is an afterstate and <i>r</i> the points from the next move. Each step adds
@@ -263,11 +265,13 @@
         <h4>Loss function: Huber loss on the Double DQN target</h4>
         <math display="block">
           <mi>y</mi><mo>=</mo><mi>r</mi><mo>+</mo><mi>γ</mi>
-          <msub><mi>Q</mi><msup><mi>θ</mi><mo>−</mo></msup></msub><mo>(</mo><msup><mi>s</mi><mo>′</mo></msup><mo>,</mo>
+          <msub><mi>Q</mi><msup><mi>θ</mi><mo>−</mo></msup></msub><mo stretchy="false">(</mo><msup><mi>s</mi><mo>′</mo></msup><mo>,</mo>
           <munder><mrow><mi>arg</mi><mo>⁡</mo><mi>max</mi></mrow><mrow><msup><mi>a</mi><mo>′</mo></msup><mtext> legal</mtext></mrow></munder>
-          <msub><mi>Q</mi><mi>θ</mi></msub><mo>(</mo><msup><mi>s</mi><mo>′</mo></msup><mo>,</mo><msup><mi>a</mi><mo>′</mo></msup><mo>)</mo><mo>)</mo>
-          <mspace width="2em" /><mi>L</mi><mo>=</mo><mtext>Huber</mtext><mo>(</mo>
-          <msub><mi>Q</mi><mi>θ</mi></msub><mo>(</mo><mi>s</mi><mo>,</mo><mi>a</mi><mo>)</mo><mo>−</mo><mi>y</mi><mo>)</mo>
+          <msub><mi>Q</mi><mi>θ</mi></msub><mo stretchy="false">(</mo><msup><mi>s</mi><mo>′</mo></msup><mo>,</mo><msup><mi>a</mi><mo>′</mo></msup><mo stretchy="false">)</mo><mo stretchy="false">)</mo>
+        </math>
+        <math display="block">
+          <mi>L</mi><mo>=</mo><mtext>Huber</mtext><mo stretchy="false">(</mo>
+          <msub><mi>Q</mi><mi>θ</mi></msub><mo stretchy="false">(</mo><mi>s</mi><mo>,</mo><mi>a</mi><mo stretchy="false">)</mo><mo>−</mo><mi>y</mi><mo stretchy="false">)</mo>
         </math>
         <p>
           The online network <i>θ</i> picks the next move and the slow copy <i>θ⁻</i> scores it, which
@@ -310,13 +314,15 @@
       <div class="loss">
         <h4>Loss function: the clipped surrogate objective</h4>
         <math display="block">
-          <mi>L</mi><mo>=</mo><mo>−</mo><mi>min</mi><mo>(</mo><mi>ρ</mi><mover><mi>A</mi><mo>^</mo></mover><mo>,</mo>
-          <mtext>clip</mtext><mo>(</mo><mi>ρ</mi><mo>,</mo><mn>1</mn><mo>−</mo><mi>ε</mi><mo>,</mo><mn>1</mn><mo>+</mo><mi>ε</mi><mo>)</mo>
-          <mover><mi>A</mi><mo>^</mo></mover><mo>)</mo><mo>+</mo><msub><mi>c</mi><mi>v</mi></msub>
-          <mfrac><mn>1</mn><mn>2</mn></mfrac><msup><mrow><mo>(</mo><mi>V</mi><mo>(</mo><mi>s</mi><mo>)</mo><mo>−</mo><mi>R</mi><mo>)</mo></mrow><mn>2</mn></msup>
-          <mo>−</mo><msub><mi>c</mi><mi>e</mi></msub><mi>H</mi><mo>(</mo><mi>π</mi><mo>)</mo>
-          <mspace width="2em" /><mi>ρ</mi><mo>=</mo>
-          <mfrac><mrow><msub><mi>π</mi><mi>θ</mi></msub><mo>(</mo><mi>a</mi><mo>∣</mo><mi>s</mi><mo>)</mo></mrow><mrow><msub><mi>π</mi><mtext>old</mtext></msub><mo>(</mo><mi>a</mi><mo>∣</mo><mi>s</mi><mo>)</mo></mrow></mfrac>
+          <mi>L</mi><mo>=</mo><mo>−</mo><mi>min</mi><mo stretchy="false">(</mo><mi>ρ</mi><mover><mi>A</mi><mo>^</mo></mover><mo>,</mo>
+          <mtext>clip</mtext><mo stretchy="false">(</mo><mi>ρ</mi><mo>,</mo><mn>1</mn><mo>−</mo><mi>ε</mi><mo>,</mo><mn>1</mn><mo>+</mo><mi>ε</mi><mo stretchy="false">)</mo>
+          <mover><mi>A</mi><mo>^</mo></mover><mo stretchy="false">)</mo><mo>+</mo><msub><mi>c</mi><mi>v</mi></msub>
+          <mfrac><mn>1</mn><mn>2</mn></mfrac><msup><mrow><mo stretchy="false">(</mo><mi>V</mi><mo stretchy="false">(</mo><mi>s</mi><mo stretchy="false">)</mo><mo>−</mo><mi>R</mi><mo stretchy="false">)</mo></mrow><mn>2</mn></msup>
+          <mo>−</mo><msub><mi>c</mi><mi>e</mi></msub><mi>H</mi><mo stretchy="false">(</mo><mi>π</mi><mo stretchy="false">)</mo>
+        </math>
+        <math display="block">
+          <mi>ρ</mi><mo>=</mo>
+          <mfrac><mrow><msub><mi>π</mi><mi>θ</mi></msub><mo stretchy="false">(</mo><mi>a</mi><mo>∣</mo><mi>s</mi><mo stretchy="false">)</mo></mrow><mrow><msub><mi>π</mi><mtext>old</mtext></msub><mo stretchy="false">(</mo><mi>a</mi><mo>∣</mo><mi>s</mi><mo stretchy="false">)</mo></mrow></mfrac>
         </math>
         <p>
           <i>Â</i> is the advantage, how much better a move went than the critic expected, estimated with
@@ -384,7 +390,7 @@
         show is still there, behind a single "Show what it's thinking" toggle.
       </p>
       <figure>
-        <img src="img/methodology/v2-site.webp" alt="The current site: your board on the left at 44 points, the AI's board on the right at about 12,000 points with a 1024 tile, and the AI's move ratings open below it." loading="lazy" />
+        <img src="img/methodology/v2-site.webp" alt="The current site: your board on the left early in a game, the AI's board on the right at about 12,000 points with a 1024 tile, and the AI's move ratings open below it." loading="lazy" />
         <figcaption>The page as it is now. The model has been playing for under a minute.</figcaption>
       </figure>
       <p>

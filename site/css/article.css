@@ -154,7 +154,8 @@
 }
 
 .loss math {
-  display: block;
+  /* Plain `block` would replace MathML's own layout and stack every symbol. */
+  display: block math;
   margin: 12px 0;
   font-size: 1.15em;
   overflow-x: auto;
