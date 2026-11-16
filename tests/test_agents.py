@@ -93,3 +93,27 @@ def test_ppo_masks_illegal_moves_and_updates():
 
     stats = list(islice(agent.train(seed=0), 40))
     assert agent.updates >= 1 and stats[-1]["loss"] is not None
+
+
+def test_spawn_expansion_is_a_distribution():
+    from rl2048.agents.expectimax import expand_spawns
+
+    afters = game.encode([
+        [[2, 0, 0, 0], [0] * 4, [0] * 4, [0] * 4],
+        [[2, 4, 8, 16], [32, 64, 128, 256], [2, 4, 8, 16], [32, 64, 0, 0]],
+    ])
+    children, parent, prob = expand_spawns(afters)
+    assert np.allclose(np.bincount(parent, weights=prob), 1.0)
+    assert (np.bincount(parent) == [30, 4]).all()
+    assert all(np.count_nonzero(c) == np.count_nonzero(afters[p]) + 1
+               for c, p in zip(children, parent))
+
+
+def test_expectimax_avoids_dead_moves():
+    from rl2048.agents.expectimax import ExpectimaxAgent
+    from rl2048.agents.ntuple import NTupleAgent
+
+    agent = ExpectimaxAgent(NTupleAgent())
+    board = game.encode([[2, 4, 8, 16], [0] * 4, [0] * 4, [0] * 4])
+    d = agent.decide(board)
+    assert d.action == game.DOWN and np.isnan(d.values[game.UP])
