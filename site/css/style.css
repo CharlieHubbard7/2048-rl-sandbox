@@ -100,6 +100,7 @@ select {
   color: var(--muted);
   font-weight: 600;
   text-decoration: none;
+  white-space: nowrap;
   cursor: pointer;
 }
 
@@ -358,7 +359,7 @@ select {
   display: inline-flex;
   padding: 3px;
   border-radius: 8px;
-  background: var(--cell-bg);
+  background: #e1e6ee;
 }
 
 .speed button {
@@ -545,4 +546,53 @@ select {
 .close:hover {
   background: var(--cell-bg);
   color: var(--ink);
+}
+
+/* ---- Small screens and touch ------------------------------------------- */
+
+.for-touch {
+  display: none;
+}
+
+@media (pointer: coarse) {
+  .for-keys {
+    display: none;
+  }
+
+  .for-touch {
+    display: inline;
+  }
+}
+
+@media (max-width: 520px) {
+  .masthead {
+    flex-direction: column;
+    gap: 16px;
+    padding-top: 32px;
+  }
+
+  .wordmark {
+    font-size: 44px;
+  }
+
+  .links {
+    padding-top: 0;
+  }
+
+  .arena {
+    row-gap: 56px;
+  }
+
+  .model {
+    flex: 1;
+  }
+
+  .model select {
+    width: 100%;
+    max-width: none;
+  }
+
+  #ai-toggle {
+    flex-basis: 100%;
+  }
 }
