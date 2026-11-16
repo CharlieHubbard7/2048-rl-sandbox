@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 112" font-family="Manrope, system-ui, -apple-system, 'Segoe UI', sans-serif">
+<title>Milliseconds per training step for the same network</title>
+<rect width="720" height="112" fill="#ffffff"/>
+<rect x="170" y="23.0" width="460.0" height="22" rx="4" fill="#4b73b5"/>
+<rect x="170" y="23.0" width="8.0" height="22" fill="#4b73b5"/>
+<text x="156.0" y="38.0" font-size="13" fill="#1d2738" text-anchor="end" font-weight="600">nn.Conv2d</text>
+<text x="640.0" y="38.0" font-size="13" fill="#687488" text-anchor="start" font-weight="500">16 ms</text>
+<rect x="170" y="67.0" width="62.1" height="22" rx="4" fill="#4b73b5"/>
+<rect x="170" y="67.0" width="8.0" height="22" fill="#4b73b5"/>
+<text x="156.0" y="82.0" font-size="13" fill="#1d2738" text-anchor="end" font-weight="600">PairConv</text>
+<text x="242.1" y="82.0" font-size="13" fill="#687488" text-anchor="start" font-weight="500">2.16 ms</text>
+</svg>

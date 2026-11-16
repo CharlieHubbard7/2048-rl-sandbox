@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 244" font-family="Manrope, system-ui, -apple-system, 'Segoe UI', sans-serif">
+<title>Mean score over 30 seeded games</title>
+<rect width="720" height="244" fill="#ffffff"/>
+<rect x="170" y="23.0" width="460.0" height="22" rx="4" fill="#d9694f"/>
+<rect x="170" y="23.0" width="8.0" height="22" fill="#d9694f"/>
+<text x="156.0" y="38.0" font-size="13" fill="#1d2738" text-anchor="end" font-weight="600">Search + N-tuple</text>
+<text x="640.0" y="38.0" font-size="13" fill="#687488" text-anchor="start" font-weight="500">109,744</text>
+<rect x="170" y="67.0" width="231.9" height="22" rx="4" fill="#4b73b5"/>
+<rect x="170" y="67.0" width="8.0" height="22" fill="#4b73b5"/>
+<text x="156.0" y="82.0" font-size="13" fill="#1d2738" text-anchor="end" font-weight="600">N-tuple network</text>
+<text x="411.9" y="82.0" font-size="13" fill="#687488" text-anchor="start" font-weight="500">55,334</text>
+<rect x="170" y="111.0" width="41.9" height="22" rx="4" fill="#4b73b5"/>
+<rect x="170" y="111.0" width="8.0" height="22" fill="#4b73b5"/>
+<text x="156.0" y="126.0" font-size="13" fill="#1d2738" text-anchor="end" font-weight="600">Heuristic</text>
+<text x="221.9" y="126.0" font-size="13" fill="#687488" text-anchor="start" font-weight="500">10,007</text>
+<rect x="170" y="155.0" width="32.2" height="22" rx="4" fill="#4b73b5"/>
+<rect x="170" y="155.0" width="8.0" height="22" fill="#4b73b5"/>
+<text x="156.0" y="170.0" font-size="13" fill="#1d2738" text-anchor="end" font-weight="600">Deep Q-network</text>
+<text x="212.2" y="170.0" font-size="13" fill="#687488" text-anchor="start" font-weight="500">7,687</text>
+<rect x="170" y="199.0" width="30.8" height="22" rx="4" fill="#4b73b5"/>
+<rect x="170" y="199.0" width="8.0" height="22" fill="#4b73b5"/>
+<text x="156.0" y="214.0" font-size="13" fill="#1d2738" text-anchor="end" font-weight="600">PPO</text>
+<text x="210.8" y="214.0" font-size="13" fill="#687488" text-anchor="start" font-weight="500">7,351</text>
+</svg>

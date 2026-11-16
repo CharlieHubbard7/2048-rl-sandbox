@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 190" font-family="Manrope, system-ui, -apple-system, 'Segoe UI', sans-serif">
+<title>Sliding a row left is one table lookup</title>
+<rect width="720" height="190" fill="#ffffff"/>
+<defs><marker id="head" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#687488"/></marker></defs>
+<rect x="24" y="40" width="46" height="46" rx="6" fill="#d9e0eb"/>
+<text x="47.0" y="69.4" font-size="18.400000000000002" fill="#33415a" text-anchor="middle" font-weight="800">2</text>
+<rect x="76" y="40" width="46" height="46" rx="6" fill="#d9e0eb"/>
+<text x="99.0" y="69.4" font-size="18.400000000000002" fill="#33415a" text-anchor="middle" font-weight="800">2</text>
+<rect x="128" y="40" width="46" height="46" rx="6" fill="#c3d0e2"/>
+<text x="151.0" y="69.4" font-size="18.400000000000002" fill="#33415a" text-anchor="middle" font-weight="800">4</text>
+<rect x="180" y="40" width="46" height="46" rx="6" fill="#edf0f4"/>
+<text x="24.0" y="26.0" font-size="12" fill="#687488" text-anchor="start" font-weight="500">the row</text>
+<text x="24.0" y="118.0" font-size="13" fill="#1d2738" text-anchor="start" font-weight="600">exponents  1  1  2  0</text>
+<line x1="236" y1="63" x2="286" y2="63" stroke="#687488" stroke-width="1.5" marker-end="url(#head)"/>
+<rect x="292" y="34" width="160" height="58" rx="8" fill="#f4f6f9" stroke="#d5dce6"/>
+<text x="372.0" y="59.0" font-size="13" fill="#1d2738" text-anchor="middle" font-weight="700">key = 4,384</text>
+<text x="372.0" y="76.0" font-size="12" fill="#687488" text-anchor="middle" font-weight="500">4 bits per cell</text>
+<line x1="456" y1="63" x2="496" y2="63" stroke="#687488" stroke-width="1.5" marker-end="url(#head)"/>
+<rect x="504" y="40" width="46" height="46" rx="6" fill="#c3d0e2"/>
+<text x="527.0" y="69.4" font-size="18.400000000000002" fill="#33415a" text-anchor="middle" font-weight="800">4</text>
+<rect x="556" y="40" width="46" height="46" rx="6" fill="#c3d0e2"/>
+<text x="579.0" y="69.4" font-size="18.400000000000002" fill="#33415a" text-anchor="middle" font-weight="800">4</text>
+<rect x="608" y="40" width="46" height="46" rx="6" fill="#edf0f4"/>
+<rect x="660" y="40" width="46" height="46" rx="6" fill="#edf0f4"/>
+<text x="504.0" y="26.0" font-size="12" fill="#687488" text-anchor="start" font-weight="500">table[key]: the slid row</text>
+<text x="504.0" y="118.0" font-size="13" fill="#1d2738" text-anchor="start" font-weight="600">+4 points, also from the table</text>
+<text x="24.0" y="164.0" font-size="13" fill="#687488" text-anchor="start" font-weight="500">All 65,536 possible rows are solved once at startup. Every move, in Python and in the</text>
+<text x="24.0" y="182.0" font-size="13" fill="#687488" text-anchor="start" font-weight="500">browser, is then a flip or transpose plus four lookups.</text>
+</svg>

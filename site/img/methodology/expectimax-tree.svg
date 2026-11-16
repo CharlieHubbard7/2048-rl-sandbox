@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 300" font-family="Manrope, system-ui, -apple-system, 'Segoe UI', sans-serif">
+<title>Expectimax: maximise over moves, average over random tiles</title>
+<rect width="720" height="300" fill="#ffffff"/>
+<defs><marker id="head" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#687488"/></marker></defs>
+<rect x="285" y="16" width="150" height="46" rx="8" fill="#fff" stroke="#d5dce6"/>
+<text x="360.0" y="35.0" font-size="13" fill="#1d2738" text-anchor="middle" font-weight="700">Board</text>
+<text x="360.0" y="52.0" font-size="12" fill="#687488" text-anchor="middle" font-weight="500">you choose: max</text>
+<line x1="360" y1="62" x2="140" y2="104" stroke="#687488" stroke-width="1.5" marker-end="url(#head)"/>
+<rect x="70" y="106" width="140" height="46" rx="8" fill="#f4f6f9" stroke="#d5dce6"/>
+<text x="140.0" y="125.0" font-size="13" fill="#1d2738" text-anchor="middle" font-weight="700">↑ Up</text>
+<text x="140.0" y="142.0" font-size="12" fill="#687488" text-anchor="middle" font-weight="500">tile appears: average</text>
+<line x1="360" y1="62" x2="360" y2="104" stroke="#687488" stroke-width="1.5" marker-end="url(#head)"/>
+<rect x="290" y="106" width="140" height="46" rx="8" fill="#f4f6f9" stroke="#d5dce6"/>
+<text x="360.0" y="125.0" font-size="13" fill="#1d2738" text-anchor="middle" font-weight="700">← Left</text>
+<text x="360.0" y="142.0" font-size="12" fill="#687488" text-anchor="middle" font-weight="500">tile appears: average</text>
+<line x1="360" y1="62" x2="580" y2="104" stroke="#687488" stroke-width="1.5" marker-end="url(#head)"/>
+<rect x="510" y="106" width="140" height="46" rx="8" fill="#f4f6f9" stroke="#d5dce6"/>
+<text x="580.0" y="125.0" font-size="13" fill="#1d2738" text-anchor="middle" font-weight="700">→ Right</text>
+<text x="580.0" y="142.0" font-size="12" fill="#687488" text-anchor="middle" font-weight="500">tile appears: average</text>
+<line x1="360" y1="152" x2="225" y2="194" stroke="#687488" stroke-width="1.5" marker-end="url(#head)"/>
+<rect x="165" y="196" width="120" height="44" rx="8" fill="#fff" stroke="#d5dce6"/>
+<text x="225.0" y="214.0" font-size="13" fill="#1d2738" text-anchor="middle" font-weight="700">2 here</text>
+<text x="225.0" y="231.0" font-size="12" fill="#687488" text-anchor="middle" font-weight="500">p = 0.9 / empties</text>
+<line x1="360" y1="152" x2="360" y2="194" stroke="#687488" stroke-width="1.5" marker-end="url(#head)"/>
+<rect x="300" y="196" width="120" height="44" rx="8" fill="#fff" stroke="#d5dce6"/>
+<text x="360.0" y="214.0" font-size="13" fill="#1d2738" text-anchor="middle" font-weight="700">4 here</text>
+<text x="360.0" y="231.0" font-size="12" fill="#687488" text-anchor="middle" font-weight="500">p = 0.1 / empties</text>
+<line x1="360" y1="152" x2="495" y2="194" stroke="#687488" stroke-width="1.5" stroke-dasharray="4 4" marker-end="url(#head)"/>
+<rect x="435" y="196" width="120" height="44" rx="8" fill="#fff" stroke="#d5dce6"/>
+<text x="495.0" y="214.0" font-size="13" fill="#1d2738" text-anchor="middle" font-weight="700">2 there</text>
+<text x="495.0" y="231.0" font-size="12" fill="#687488" text-anchor="middle" font-weight="500">…</text>
+<text x="360.0" y="270.0" font-size="13" fill="#687488" text-anchor="middle" font-weight="500">…until the depth runs out, where the N-tuple network scores the board.</text>
+<text x="360.0" y="290.0" font-size="13" fill="#687488" text-anchor="middle" font-weight="500">One ply normally, two when fewer than four cells are empty.</text>
+</svg>
