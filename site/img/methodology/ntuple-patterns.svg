@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 200" font-family="Manrope, system-ui, -apple-system, 'Segoe UI', sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 162" font-family="Manrope, system-ui, -apple-system, 'Segoe UI', sans-serif">
 <title>The four six-cell patterns of the N-tuple network</title>
-<rect width="720" height="200" fill="#ffffff"/>
+<rect width="720" height="162" fill="#ffffff"/>
 <text x="24.0" y="22.0" font-size="13" fill="#1d2738" text-anchor="start" font-weight="700">Pattern 1</text>
 <rect x="24" y="34" width="26" height="26" rx="4" fill="#d9694f"/>
 <rect x="54" y="34" width="26" height="26" rx="4" fill="#d9694f"/>
@@ -69,6 +69,4 @@
 <rect x="582" y="124" width="26" height="26" rx="4" fill="#edf0f4"/>
 <rect x="612" y="124" width="26" height="26" rx="4" fill="#edf0f4"/>
 <rect x="642" y="124" width="26" height="26" rx="4" fill="#edf0f4"/>
-<text x="24.0" y="180.0" font-size="13" fill="#687488" text-anchor="start" font-weight="500">Each pattern is reused in all 8 rotations and reflections of the board, so one</text>
-<text x="24.0" y="198.0" font-size="13" fill="#687488" text-anchor="start" font-weight="500">board becomes 32 table lookups, and one game teaches every orientation at once.</text>
 </svg>

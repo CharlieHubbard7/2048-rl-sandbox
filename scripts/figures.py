@@ -257,7 +257,7 @@ def line_lookup():
     after, reward = game.move(np.array([row, [0] * 4, [0] * 4, [0] * 4], np.uint8), game.LEFT)
     key = (row[0] << 12) | (row[1] << 8) | (row[2] << 4) | row[3]
 
-    svg = Svg(720, 190, "Sliding a row left is one table lookup")
+    svg = Svg(720, 140, "Sliding a row left is one table lookup")
     svg.add(ARROW_HEAD)
     for i, e in enumerate(row):
         tile(svg, 24 + i * 52, 40, 46, e)
@@ -270,14 +270,6 @@ def line_lookup():
         tile(svg, 504 + i * 52, 40, 46, int(e))
     svg.text(504, 26, "table[key]: the slid row", 12, MUTED)
     svg.text(504, 118, f"+{int(reward)} points, also from the table", 13, INK, weight=600)
-    svg.text(
-        24,
-        164,
-        "All 65,536 possible rows are solved once at startup. Every move, in Python and in the",
-        13,
-        MUTED,
-    )
-    svg.text(24, 182, "browser, is then a flip or transpose plus four lookups.", 13, MUTED)
     svg.save("line-lookup.svg")
 
 
@@ -285,7 +277,7 @@ def ntuple_patterns():
     from rl2048.agents.ntuple import PATTERNS
 
     cell, gap = 26, 4
-    svg = Svg(720, 200, "The four six-cell patterns of the N-tuple network")
+    svg = Svg(720, 162, "The four six-cell patterns of the N-tuple network")
     for p, pattern in enumerate(PATTERNS):
         ox = 24 + p * 176
         svg.text(ox, 22, f"Pattern {p + 1}", 13, INK, weight=700)
@@ -293,17 +285,11 @@ def ntuple_patterns():
             x, y = ox + (c % 4) * (cell + gap), 34 + (c // 4) * (cell + gap)
             fill = SERIES["ntuple"] if c in pattern else "#edf0f4"
             svg.add(f'<rect x="{x}" y="{y}" width="{cell}" height="{cell}" rx="4" fill="{fill}"/>')
-    svg.text(
-        24, 180, "Each pattern is reused in all 8 rotations and reflections of the board, so one", 13, MUTED
-    )
-    svg.text(
-        24, 198, "board becomes 32 table lookups, and one game teaches every orientation at once.", 13, MUTED
-    )
     svg.save("ntuple-patterns.svg")
 
 
 def expectimax_tree():
-    svg = Svg(720, 300, "Expectimax: maximise over moves, average over random tiles")
+    svg = Svg(720, 284, "Expectimax: maximise over moves, average over random tiles")
     svg.add(ARROW_HEAD)
     box(svg, 285, 16, 150, 46, "Board", "you choose: max", "#fff")
     moves = [("↑ Up", 70), ("← Left", 290), ("→ Right", 510)]
@@ -324,12 +310,11 @@ def expectimax_tree():
         MUTED,
         "middle",
     )
-    svg.text(360, 290, "One ply normally, two when fewer than four cells are empty.", 13, MUTED, "middle")
     svg.save("expectimax-tree.svg")
 
 
 def networks():
-    svg = Svg(720, 250, "The shared network shape for DQN and PPO")
+    svg = Svg(720, 240, "The shared network shape for DQN and PPO")
     svg.add(ARROW_HEAD)
     stages = [
         ("Board", "16 one-hot planes"),
@@ -346,8 +331,6 @@ def networks():
     arrow(svg, 576, 134, 596, 186)
     box(svg, 598, 30, 110, 54, "DQN head", "4 Q-values", "#fff")
     box(svg, 598, 166, 110, 54, "PPO heads", "4 probs + value", "#fff")
-    svg.text(16, 30, "Same trunk, different heads.", 13, INK, weight=700)
-    svg.text(16, 50, "2×2 kernels look at exactly the neighbour pairs that can merge.", 13, MUTED)
     svg.save("networks.svg")
 
 
