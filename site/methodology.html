@@ -168,6 +168,213 @@
         move. You can see it in the screenshot above. Both of those pushed me toward the second version, but
         first, the models.
       </p>
+
+      <h2>Five ways to play</h2>
+      <p>
+        Every approach plays the same game, framed the same way: a
+        <a href="https://en.wikipedia.org/wiki/Markov_decision_process">Markov decision process</a>. The state
+        is the board, the action is one of four moves, and the reward is the points from whatever merged. What
+        separates the methods is how they decide, and, for the ones that learn, what they are trained to make
+        small. That quantity is the <a href="https://en.wikipedia.org/wiki/Loss_function">loss function</a>,
+        and I've written each one out below because it says more about a method than any description.
+      </p>
+
+      <h3>1. The heuristic</h3>
+      <p>
+        Covered above: a score I designed by hand, and a one-move lookahead. It's in the lineup as the floor.
+      </p>
+      <div class="loss">
+        <h4>Loss function</h4>
+        <p>None. Nothing is learned; every weight in the score is a number I picked and tuned by watching it play.</p>
+      </div>
+
+      <h3>2. The N-tuple network, trained with temporal-difference learning</h3>
+      <p>
+        This is the approach most 2048 research builds on, and the one I read about in
+        <a href="https://arxiv.org/abs/1606.07374">Yeh et al. (2016)</a>. Instead of a neural network, the
+        value of a board is a sum of numbers looked up in big tables. Four patterns of six cells each are laid
+        over the board in all eight rotations and reflections, and each placement reads the tiles under it as
+        an index into that pattern's table. Thirty-two lookups, added up, is the network's opinion of the
+        board.
+      </p>
+      <figure>
+        <img src="img/methodology/ntuple-patterns.svg" alt="Four 4 by 4 grids, each with six highlighted cells: the top row plus two cells below, the second row plus two, a 2 by 3 block in the corner, and a 2 by 3 block one row down." loading="lazy" />
+        <figcaption>The four patterns, drawn straight from the code. Sharing each one across all eight symmetries means one game teaches every orientation at once.</figcaption>
+      </figure>
+      <p>
+        It values <em>afterstates</em>: the board right after my slide, before the random tile lands. That
+        detail matters more than it sounds. The randomness of where a tile appears is the part I can't
+        control, so learning the value of the board just before it strips the noise out of what the network
+        is asked to learn. To choose a move, it adds the merge reward to the value of the resulting
+        afterstate and takes the best.
+      </p>
+      <p>
+        It learns with <a href="https://en.wikipedia.org/wiki/Temporal_difference_learning">temporal-difference
+        learning</a>: after each move, nudge the value of where I was toward the reward I got plus the value
+        of where I ended up. I run the updates backwards from the end of each game, so the final outcome
+        reaches the early moves in one pass instead of creeping back one game at a time.
+      </p>
+      <div class="loss">
+        <h4>Loss function: the TD error</h4>
+        <math display="block">
+          <mi>δ</mi><mo>=</mo><msub><mi>r</mi><mrow><mi>t</mi><mo>+</mo><mn>1</mn></mrow></msub><mo>+</mo>
+          <mi>V</mi><mo>(</mo><msubsup><mi>s</mi><mrow><mi>t</mi><mo>+</mo><mn>1</mn></mrow><mo>′</mo></msubsup><mo>)</mo>
+          <mo>−</mo><mi>V</mi><mo>(</mo><msubsup><mi>s</mi><mi>t</mi><mo>′</mo></msubsup><mo>)</mo>
+          <mspace width="2em" /><mi>L</mi><mo>=</mo><mfrac><mn>1</mn><mn>2</mn></mfrac><msup><mi>δ</mi><mn>2</mn></msup>
+        </math>
+        <p>
+          <i>s′</i> is an afterstate and <i>r</i> the points from the next move. Each step adds
+          <i>αδ</i>/32 to each of the 32 weights that were active, with <i>α</i> = 0.1. Because the value is
+          a plain sum, that is exactly a gradient step on <i>L</i>, and it only ever touches 32 numbers.
+        </p>
+      </div>
+      <p>
+        It learned fast. In a 60-minute run it played 55,022 games against itself, and the share of its
+        recent games reaching 2048 went from zero to 90%.
+      </p>
+      <figure>
+        <img src="img/methodology/ntuple-2048-rate.svg" alt="Line chart: the N-tuple network's 2048 rate over its last 100 training games climbs from 0% to about 50% by minute 10, 75% by minute 25, and 90% at minute 60." loading="lazy" />
+        <figcaption>Share of the last 100 training games that reached 2048, logged every ten seconds.</figcaption>
+      </figure>
+
+      <h3>3. The deep Q-network</h3>
+      <p>
+        <a href="https://en.wikipedia.org/wiki/Q-learning#Deep_Q-learning">Deep Q-learning</a> is the method
+        famous for learning Atari games from pixels. Here a
+        <a href="https://en.wikipedia.org/wiki/Convolutional_neural_network">convolutional network</a> reads the
+        board as sixteen <a href="https://en.wikipedia.org/wiki/One-hot">one-hot</a> planes, one per tile
+        value, so that a 1024 next to a 2048 looks as different as it is. It outputs a Q-value for each move:
+        how many more points it expects if it makes that move and plays well afterwards. The convolutions are
+        2×2, which covers exactly the pairs of neighbours that can merge.
+      </p>
+      <figure>
+        <img src="img/methodology/networks.svg" alt="Diagram: the board as 16 one-hot planes feeds two 2 by 2 convolutions and a dense layer of 256, which splits into a DQN head of four Q-values or PPO heads of four probabilities plus a value." loading="lazy" />
+        <figcaption>DQN and PPO share the same body and differ only in what comes out of it.</figcaption>
+      </figure>
+      <p>
+        The rest is the standard recipe, plus two choices specific to this game. It plays 32 games at once
+        and stores 200,000 recent moves in a replay buffer to train on. It explores randomly at first and
+        less over time. A slowly-updated copy of the network supplies the targets so it isn't chasing itself.
+        The two 2048-specific choices: illegal moves are masked out rather than punished, and rewards are
+        squashed with a logarithm, because a 2048 merge is worth a thousand times a 4 merge and raw points
+        made the targets explode late in games.
+      </p>
+      <div class="loss">
+        <h4>Loss function: Huber loss on the Double DQN target</h4>
+        <math display="block">
+          <mi>y</mi><mo>=</mo><mi>r</mi><mo>+</mo><mi>γ</mi>
+          <msub><mi>Q</mi><msup><mi>θ</mi><mo>−</mo></msup></msub><mo>(</mo><msup><mi>s</mi><mo>′</mo></msup><mo>,</mo>
+          <munder><mrow><mi>arg</mi><mo>⁡</mo><mi>max</mi></mrow><mrow><msup><mi>a</mi><mo>′</mo></msup><mtext> legal</mtext></mrow></munder>
+          <msub><mi>Q</mi><mi>θ</mi></msub><mo>(</mo><msup><mi>s</mi><mo>′</mo></msup><mo>,</mo><msup><mi>a</mi><mo>′</mo></msup><mo>)</mo><mo>)</mo>
+          <mspace width="2em" /><mi>L</mi><mo>=</mo><mtext>Huber</mtext><mo>(</mo>
+          <msub><mi>Q</mi><mi>θ</mi></msub><mo>(</mo><mi>s</mi><mo>,</mo><mi>a</mi><mo>)</mo><mo>−</mo><mi>y</mi><mo>)</mo>
+        </math>
+        <p>
+          The online network <i>θ</i> picks the next move and the slow copy <i>θ⁻</i> scores it, which
+          keeps Q-learning from overrating moves. <i>γ</i> = 0.99, and
+          <a href="https://en.wikipedia.org/wiki/Huber_loss">Huber loss</a> behaves like squared error for
+          small mistakes and like absolute error for big ones, so one wild target can't wreck a batch.
+        </p>
+      </div>
+      <p>
+        My first DQN trained painfully slowly, about 1,000 moves a second. I profiled it expecting my own code
+        to be the problem, and it wasn't: PyTorch's CPU convolution, on a build without Intel's MKLDNN
+        library, spent 16 milliseconds a step on convolutions this tiny. A 2×2 convolution is the same math
+        as multiplying stacked 2×2 patches by a matrix, so I wrote it that way, proved it identical with a
+        unit test, and got a 7× faster training step.
+      </p>
+      <figure>
+        <img src="img/methodology/conv-speed.svg" alt="Bar chart: one training step takes 16 milliseconds with nn.Conv2d and 2.16 milliseconds with PairConv." loading="lazy" />
+        <figcaption>Same network, same math, one forward and backward pass on 256 boards.</figcaption>
+      </figure>
+      <p>
+        After 30 minutes and about 15,500 games, it averaged 7,687 in the benchmark and reached 2048 in 3% of
+        games. Below my heuristic.
+      </p>
+
+      <h3>4. PPO</h3>
+      <p>
+        <a href="https://en.wikipedia.org/wiki/Proximal_policy_optimization">Proximal policy optimization</a>
+        learns a policy directly, a probability for each move, rather than a value for each. It is an
+        <a href="https://en.wikipedia.org/wiki/Actor-critic_algorithm">actor-critic</a> method: the same network
+        body has a policy head (the actor) and a value head (the critic) that estimates how good the position
+        is, so the actor can be told whether a move turned out better or worse than expected. It plays 64
+        games for 128 moves, learns from that batch for four passes, and repeats.
+      </p>
+      <p>
+        Masking mattered even more here. Late in a game there are often only one or two legal moves, and an
+        unmasked policy wastes most of its probability learning that the others do nothing. I set illegal
+        moves' scores to a huge negative number before the softmax. Not negative infinity, which turns the
+        entropy term into "zero times infinity" and fills the training with NaNs.
+      </p>
+      <div class="loss">
+        <h4>Loss function: the clipped surrogate objective</h4>
+        <math display="block">
+          <mi>L</mi><mo>=</mo><mo>−</mo><mi>min</mi><mo>(</mo><mi>ρ</mi><mover><mi>A</mi><mo>^</mo></mover><mo>,</mo>
+          <mtext>clip</mtext><mo>(</mo><mi>ρ</mi><mo>,</mo><mn>1</mn><mo>−</mo><mi>ε</mi><mo>,</mo><mn>1</mn><mo>+</mo><mi>ε</mi><mo>)</mo>
+          <mover><mi>A</mi><mo>^</mo></mover><mo>)</mo><mo>+</mo><msub><mi>c</mi><mi>v</mi></msub>
+          <mfrac><mn>1</mn><mn>2</mn></mfrac><msup><mrow><mo>(</mo><mi>V</mi><mo>(</mo><mi>s</mi><mo>)</mo><mo>−</mo><mi>R</mi><mo>)</mo></mrow><mn>2</mn></msup>
+          <mo>−</mo><msub><mi>c</mi><mi>e</mi></msub><mi>H</mi><mo>(</mo><mi>π</mi><mo>)</mo>
+          <mspace width="2em" /><mi>ρ</mi><mo>=</mo>
+          <mfrac><mrow><msub><mi>π</mi><mi>θ</mi></msub><mo>(</mo><mi>a</mi><mo>∣</mo><mi>s</mi><mo>)</mo></mrow><mrow><msub><mi>π</mi><mtext>old</mtext></msub><mo>(</mo><mi>a</mi><mo>∣</mo><mi>s</mi><mo>)</mo></mrow></mfrac>
+        </math>
+        <p>
+          <i>Â</i> is the advantage, how much better a move went than the critic expected, estimated with
+          GAE (λ = 0.95). Clipping <i>ρ</i> to within <i>ε</i> = 0.2 of 1 stops a single batch from moving the
+          policy too far. The second term trains the critic, and the entropy bonus <i>H</i> keeps it exploring.
+        </p>
+      </div>
+      <p>
+        After 30 minutes and about 52,700 games, it averaged 7,351 and never reached 2048. Also below my
+        heuristic.
+      </p>
+
+      <h3>5. Search on top of learning</h3>
+      <p>
+        This is where Code Bullet's idea came back. <a href="https://en.wikipedia.org/wiki/Expectiminimax">Expectimax</a>
+        search looks ahead the way he did, but treats the game honestly: I choose my move, so it takes the best
+        move, but the game chooses where the next tile lands, so it averages over every empty cell with a 2
+        (90%) or a 4 (10%). Instead of searching until the game ends, it stops after one or two levels and asks
+        the N-tuple network how good the board looks.
+      </p>
+      <figure>
+        <img src="img/methodology/expectimax-tree.svg" alt="Tree diagram: the board branches into up, left and right moves; each move branches into every possible new tile, weighted by probability; the leaves are scored by the N-tuple network." loading="lazy" />
+        <figcaption>Max over my moves, average over the game's tiles, and learned values where the search stops.</figcaption>
+      </figure>
+      <p>
+        It searches one level normally and two when fewer than four cells are empty. Crowded boards are the
+        most dangerous and also the cheapest to search, because there are few places a tile can land.
+      </p>
+      <div class="loss">
+        <h4>Loss function</h4>
+        <p>
+          None of its own. It borrows everything the N-tuple network learned and spends computation instead:
+          the value of a move is its reward plus the probability-weighted best value of every board the next
+          tile could create.
+        </p>
+      </div>
+
+      <h3>How they compare</h3>
+      <figure>
+        <img src="img/methodology/learning-curves.svg" alt="Line chart of average score over the last 100 training games. The N-tuple network climbs steadily from about 8,000 to 57,800 over 60 minutes. DQN and PPO rise quickly to around 7,000 and flatten, ending at 7,800 and 6,300 after 30 minutes." loading="lazy" />
+        <figcaption>Average score of recent training games. All three trained at the same time on one laptop CPU.</figcaption>
+      </figure>
+      <p>
+        The neural networks got half the training time, so this isn't a perfectly fair fight. But look at the
+        shape: their curves had flattened, while the N-tuple network was still climbing at the hour mark. I
+        think the reason is structure. The N-tuple network starts out knowing which groups of cells matter and
+        only has to learn the numbers. The networks have to discover that structure from scratch, in a game
+        where a single bad move can lose thousands of moves of progress.
+      </p>
+      <figure>
+        <img src="img/methodology/benchmark.svg" alt="Bar chart of mean score over 30 seeded games: Search plus N-tuple 109,744; N-tuple network 55,334; Heuristic 10,007; Deep Q-network 7,687; PPO 7,351." loading="lazy" />
+        <figcaption>Thirty seeded games each, played by the same JavaScript the site runs. Search plus learning reached 2048 in 97% of games, and 4096 in all of those.</figcaption>
+      </figure>
+      <p>
+        So the answer to the question Code Bullet left me with: search and learning are better together.
+        Learning alone scored five and a half times my heuristic, and adding a shallow search on top doubled
+        that again.
+      </p>
     </article>
   </body>
 </html>
