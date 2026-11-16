@@ -94,9 +94,9 @@ def latest_checkpoint(name, ext):
     return files[-1]
 
 
-def export_ntuple(min_weight=0.0):
-    agent = NTupleAgent()
-    agent.load(latest_checkpoint("ntuple", ".pkl"))
+def export_ntuple(agent, path, min_weight=0.0):
+    """Write the weights training touched (above `min_weight`) and return an
+    agent rebuilt from the file, i.e. exactly what the browser will see."""
     arrays = {}
     for t in range(len(PATTERNS)):
         keys = np.flatnonzero(np.abs(agent.lut[t]) > min_weight)
@@ -104,11 +104,7 @@ def export_ntuple(min_weight=0.0):
         arrays[f"keys{t}"] = np.diff(keys, prepend=0).astype(np.uint32)
         arrays[f"values{t}"] = agent.lut[t][keys]
     meta = {"cells": CELLS.tolist(), "table_of": TABLE_OF.tolist(), "episodes": agent.episodes}
-    path = MODELS / "ntuple.bin.gz"
-    MODELS.mkdir(parents=True, exist_ok=True)
     write_bundle(path, arrays, meta)
-    kept = sum(len(a) for k, a in arrays.items() if k.startswith("keys"))
-    print(f"wrote {path.relative_to(ROOT)} ({path.stat().st_size / 1e6:.2f} MB, {kept:,} weights)")
     return load_ntuple(path)
 
 
@@ -141,15 +137,10 @@ def export_ntuple_fixtures(agent, boards):
 # ---- neural nets ---------------------------------------------------------
 
 
-def export_net(name, agent_cls):
-    agent = agent_cls()
-    agent.load(latest_checkpoint(name, ".pt"))
+def export_net(agent, path):
+    """Write a torch agent's weights and return it reloaded from the file."""
     weights = {k: v.detach().numpy() for k, v in agent.net.state_dict().items()}
-    path = MODELS / f"{name}.bin.gz"
     write_bundle(path, weights)
-    print(f"wrote {path.relative_to(ROOT)} ({path.stat().st_size / 1e3:.0f} KB)")
-
-    # Reference outputs come from the dequantised weights the browser gets.
     _, arrays = read_bundle(path)
     agent.net.load_state_dict({k: torch.from_numpy(arrays[k].copy()) for k in weights})
     return agent
@@ -184,9 +175,21 @@ def main():
     if args.what == "fixtures":
         export_engine_fixtures()
         return
+    MODELS.mkdir(parents=True, exist_ok=True)
+    agents = {}
+    for name, cls in [("ntuple", NTupleAgent), ("dqn", DQNAgent), ("ppo", PPOAgent)]:
+        agent = cls()
+        agent.load(latest_checkpoint(name, agent.checkpoint_ext))
+        path = MODELS / f"{name}.bin.gz"
+        if name == "ntuple":
+            agents[name] = export_ntuple(agent, path, args.min_weight)
+        else:
+            agents[name] = export_net(agent, path)
+        print(f"wrote {path.relative_to(ROOT)} ({path.stat().st_size / 1e6:.2f} MB)")
+
     boards = realistic_boards(60)
-    export_ntuple_fixtures(export_ntuple(args.min_weight), boards)
-    export_net_fixtures(export_net("dqn", DQNAgent), export_net("ppo", PPOAgent), boards)
+    export_ntuple_fixtures(agents["ntuple"], boards)
+    export_net_fixtures(agents["dqn"], agents["ppo"], boards)
 
 
 if __name__ == "__main__":
