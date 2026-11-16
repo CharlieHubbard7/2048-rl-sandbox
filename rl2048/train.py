@@ -2,8 +2,8 @@
 
     python -m rl2048.train ntuple --minutes 10
 
-Checkpoints land in checkpoints/ with the same naming the sandbox uses, so
-the server picks up the newest one automatically on its next start.
+Checkpoints land in checkpoints/. `python -m rl2048.export models` turns the
+newest ones into the weight files the site loads.
 """
 
 import argparse
@@ -13,23 +13,22 @@ from pathlib import Path
 
 import numpy as np
 
-from .agents import build_agents
+from .agents import TRAINABLE
 
 CHECKPOINTS = Path(__file__).resolve().parent.parent / "checkpoints"
 
 
 def main():
-    agents = {n: a for n, a in build_agents().items() if a.trainable}
     parser = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
     )
-    parser.add_argument("agent", choices=sorted(agents))
+    parser.add_argument("agent", choices=sorted(TRAINABLE))
     parser.add_argument("--minutes", type=float, default=5.0)
     parser.add_argument("--resume", type=Path, help="checkpoint to continue from")
     parser.add_argument("--seed", type=int, default=None)
     args = parser.parse_args()
 
-    agent = agents[args.agent]
+    agent = TRAINABLE[args.agent]()
     if args.resume:
         agent.load(args.resume)
 

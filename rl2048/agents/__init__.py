@@ -4,6 +4,8 @@ from .expectimax import ExpectimaxAgent
 from .ntuple import NTupleAgent
 from .ppo import PPOAgent
 
+TRAINABLE = {"ntuple": NTupleAgent, "dqn": DQNAgent, "ppo": PPOAgent}
+
 
 def build_agents():
     # Expectimax shares the n-tuple instance, so training one improves both.

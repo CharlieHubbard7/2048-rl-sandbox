@@ -6,7 +6,7 @@ import numpy as np
 
 @dataclass
 class Decision:
-    """Everything the UI needs to explain a single move."""
+    """A chosen move plus what went into choosing it."""
 
     action: int
     values: np.ndarray  # one number per action; NaN marks an illegal move
