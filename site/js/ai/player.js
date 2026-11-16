@@ -15,10 +15,13 @@ export class AiPlayer {
   // the worker can tell it has been superseded and quietly exit.
   #run = 0;
 
-  constructor(view, { model, speed, onMove, onChange, onError }) {
+  constructor(view, { model, speed, explain, onMove, onChange, onError }) {
     this.view = view;
     this.model = model;
     this.running = false;
+    // Asked before each move: explanations cost extra work, so they are only
+    // computed while someone is looking at them.
+    this.explain = explain;
     Object.assign(this, { onMove, onChange, onError });
     this.setSpeed(speed);
   }
@@ -60,7 +63,7 @@ export class AiPlayer {
       const started = performance.now();
       let decision;
       try {
-        decision = await decide(this.model, this.game.board);
+        decision = await decide(this.model, this.game.board, { explain: this.explain() });
       } catch (error) {
         if (run === this.#run) this.stop();
         this.onError(error);

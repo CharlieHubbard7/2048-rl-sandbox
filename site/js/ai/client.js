@@ -10,10 +10,10 @@ worker.addEventListener("message", ({ data }) => {
   else request.resolve(data.decision);
 });
 
-export function decide(model, board) {
+export function decide(model, board, { explain = false } = {}) {
   return new Promise((resolve, reject) => {
     const id = nextId++;
     pending.set(id, { resolve, reject });
-    worker.postMessage({ id, model, board: Array.from(board) });
+    worker.postMessage({ id, model, board: Array.from(board), explain });
   });
 }
