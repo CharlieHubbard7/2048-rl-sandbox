@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>How I built Twos</title>
+    <meta name="description" content="From a question about search versus learning to five models playing 2048 in the browser: how Twos was built, including the version I threw away." />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <meta name="theme-color" content="#eef1f5" />
+    <meta property="og:title" content="How I built Twos" />
+    <meta property="og:image" content="https://charliehubbard7.github.io/2048-rl-sandbox/preview.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/article.css" />
+  </head>
+  <body>
+    <nav class="article-nav">
+      <a class="wordmark" href="./">Twos</a>
+      <div class="links">
+        <a class="link" href="./">Play</a>
+        <a class="link" href="https://github.com/CharlieHubbard7/2048-rl-sandbox">GitHub</a>
+      </div>
+    </nav>
+
+    <article class="article">
+      <header>
+        <h1>How I built Twos</h1>
+        <p class="dek">
+          A game of 2048 with a trained model playing the same tiles beside you. This is the path from one
+          question about search versus learning to five models running in your browser, including the
+          version I threw away.
+        </p>
+        <ul class="facts">
+          <li><strong>5</strong> ways to play, from a hand-written rule to search on top of learning</li>
+          <li><strong>55,022</strong> games the best model played against itself while learning</li>
+          <li><strong>0</strong> servers: every model runs in your browser</li>
+        </ul>
+      </header>
+
+      <h2>It started in 15-112</h2>
+      <p>
+        In the fall of 2025 I took <a href="https://www.cs.cmu.edu/~112/">15-112</a>, Carnegie Mellon's
+        introductory programming course, with Professor David Kosbie. The course has a reputation for volume:
+        a lot of problems, each one built up in small pieces, each piece tested before you move on. When I
+        later asked Kosbie what the secret of the course was, his answer was refreshingly plain.
+      </p>
+      <blockquote>
+        <p>“I hate to say it, but the secret is volume.”</p>
+        <cite>David Kosbie, on my podcast</cite>
+      </blockquote>
+      <p>
+        That habit of building small and testing everything ended up being the backbone of this project. So
+        did the other thing 112 gave me: the confidence that a game is just a program, and a program is
+        something I can take apart.
+      </p>
+
+      <h2>Watching Code Bullet beat it</h2>
+      <p>
+        Around the same time I watched Code Bullet's
+        <a href="https://www.youtube.com/watch?v=1g1HCYTX3Rg">AI learns to play 2048</a>. He builds
+        <a href="https://en.wikipedia.org/wiki/2048_(video_game)">the game</a> from scratch and then an AI
+        that plays it, and his <a href="https://github.com/Code-Bullet/2048-AI">project</a> describes the
+        approach as a look-ahead algorithm: try the moves, see where they lead, pick the best.
+      </p>
+      <figure>
+        <iframe
+          src="https://www.youtube-nocookie.com/embed/1g1HCYTX3Rg"
+          title="Code Bullet: AI learns to play 2048"
+          loading="lazy"
+          allow="encrypted-media; picture-in-picture"
+          allowfullscreen
+        ></iframe>
+        <figcaption>Code Bullet's video was the spark. His AI looks ahead rather than learning from experience.</figcaption>
+      </figure>
+      <p>
+        What stuck with me was the question underneath it. His AI searches. Most of the
+        <a href="https://en.wikipedia.org/wiki/Reinforcement_learning">reinforcement learning</a> I had read
+        about learns from experience instead, playing thousands of games and slowly getting better. Which one
+        actually works better on a game like this? And could you combine them? That question became the
+        project.
+      </p>
+
+      <h2>Trying it myself first</h2>
+      <p>
+        I talked with Kosbie about how AI is changing the way students learn in an episode of my podcast
+        (<a href="https://open.spotify.com/episode/6iPdradZ3Yok0iUAZhYZ5V">Spotify</a>,
+        <a href="https://www.youtube.com/watch?v=tt__D4LEq7g">YouTube</a>, and
+        <a href="https://charliehubbard.substack.com/p/the-professor-who-made-me-think-differently">my write-up</a>).
+        He passed along a framing from Zico Kolter, who heads CMU's machine learning department, that I keep
+        coming back to.
+      </p>
+      <blockquote>
+        <p>“AI is great at helping you do things you can already do.”</p>
+        <cite>Zico Kolter, as Kosbie told it</cite>
+      </blockquote>
+      <p>
+        The other half of that idea is the warning: it is dangerous when it does things for you that you
+        cannot do. So before touching any learning algorithm, I started with the parts I could reason through
+        on paper: the rules of the game, and a strategy for playing it. When I did lean on AI tools later, I
+        tried to hold myself to that line. Use them to go faster on pieces I could already explain, and make
+        sure I could explain every piece by the end. This page is partly that explanation.
+      </p>
+      <figure>
+        <iframe
+          src="https://www.youtube-nocookie.com/embed/tt__D4LEq7g"
+          title="David Kosbie: Lessons from a Life in Teaching and Technology"
+          loading="lazy"
+          allow="encrypted-media; picture-in-picture"
+          allowfullscreen
+        ></iframe>
+        <figcaption>My conversation with David Kosbie on teaching, effort and what AI is doing to learning.</figcaption>
+      </figure>
+
+      <h3>The rules are trickier than they look</h3>
+      <p>
+        2048 looks simple until you write it down. A tile can only merge once per move, so a row of
+        <code>2 2 2 2</code> slides left to <code>4 4</code>, not <code>8</code>. A row of <code>2 2 4</code>
+        becomes <code>4 4</code>, because the new 4 doesn't get to merge again. When three equal tiles line up,
+        the pair nearest the wall merges first. A move that changes nothing doesn't count, and no new tile
+        appears. I wrote each of those as a unit test before writing the code that passes it, which is the
+        most 112 thing in this whole project.
+      </p>
+      <p>
+        For speed I store each tile as its exponent (2 is 1, 4 is 2, 2048 is 11), which fits in four bits.
+        A row of four tiles then packs into a 16-bit number, and there are only 65,536 possible rows, so I
+        solve every one of them once when the program starts. After that, every move in every direction is a
+        flip or transpose of the board plus four lookups. One game runs at about 23,000 moves a second in
+        Python, and the neural networks later trained on batches of 32 to 64 games at once.
+      </p>
+      <figure>
+        <img src="img/methodology/line-lookup.svg" alt="The row 2, 2, 4, empty becomes the key 4,384, which looks up the slid row 4, 4, empty, empty and a reward of 4 points." loading="lazy" />
+        <figcaption>Every slide is a table lookup. The table is built once from the same merge rules the tests check.</figcaption>
+      </figure>
+
+      <h3>My strategy, written down</h3>
+      <p>
+        The way most people learn to play 2048 is to pick a corner, park the biggest tile there, and keep a
+        descending chain behind it so merges keep cascading toward the corner. I turned that into a
+        <a href="https://en.wikipedia.org/wiki/Heuristic_(computer_science)">heuristic</a>: a score for any
+        board that rewards big tiles near the corner along a snake-shaped path, empty cells, and neighbouring
+        tiles that can merge, and penalises big jumps between neighbours. The player looks one move ahead and
+        picks whichever move leads to the best-scoring board.
+      </p>
+      <p>
+        It worked better than I expected. Random moves average about 1,000 points. The heuristic averages
+        10,007 and reaches 2048 in 7% of games. That number became the bar: any learning method that couldn't
+        beat my hand-written rule wasn't learning anything worth having.
+      </p>
+
+      <h2>Version one: a lab, not a game</h2>
+      <figure>
+        <img src="img/methodology/v1-dashboard.webp" alt="A dark dashboard with an agent selector, a 2048 board covered by a 'No moves left' message at score 0, move value bars, three training charts and a benchmark table." loading="lazy" />
+        <figcaption>The first version, mid-training. Notice the board: score 0, and it already says "No moves left".</figcaption>
+      </figure>
+      <p>
+        My first full build was a sandbox. A Python server (FastAPI) ran the game and streamed every board
+        over a WebSocket to a dashboard with an agent picker, the agent's value for each move, a heatmap, live
+        training charts, saved checkpoints, and an arena that benchmarked every agent on the same games. As a
+        tool for me, it was great. It is where everything in the next section was trained and compared.
+      </p>
+      <p>
+        As something anyone else would use, it failed in two ways. The game lived on the server, so every
+        visitor shared one board: if one person lost, everyone had lost. And a one-line CSS bug meant the
+        game-over message could never hide. The overlay set <code>display: grid</code>, which quietly overrides
+        HTML's <code>hidden</code> attribute, so the board announced "No moves left" before anyone had made a
+        move. You can see it in the screenshot above. Both of those pushed me toward the second version, but
+        first, the models.
+      </p>
+    </article>
+  </body>
+</html>
