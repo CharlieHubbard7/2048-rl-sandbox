@@ -17,8 +17,8 @@ jobs:
       # The CPU-only torch wheel is a fraction of the size of the default one.
       - run: pip install torch --index-url https://download.pytorch.org/whl/cpu
       - run: pip install -r requirements.txt ruff
-      - run: ruff check rl2048 tests
-      - run: ruff format --check rl2048 tests
+      - run: ruff check rl2048 tests scripts
+      - run: ruff format --check rl2048 tests scripts
       - run: pytest -q
 
   javascript:
