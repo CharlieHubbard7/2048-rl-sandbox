@@ -14,6 +14,7 @@ let seed = saved.seed ?? randomSeed();
 let best = saved.best ?? 0;
 let you = new Game(seed, saved.you);
 let lastDecision = null;
+const loadedModels = new Set(); // models whose weights have arrived
 
 const youView = new BoardView($("you-board"));
 const aiView = new BoardView($("ai-board"), { heat: true });
@@ -24,6 +25,7 @@ const ai = new AiPlayer(aiView, {
   speed: saved.speed,
   explain: () => thinking.open,
   onMove(decision) {
+    if (decision) loadedModels.add(ai.model);
     lastDecision = decision;
     showAi();
   },
@@ -88,7 +90,15 @@ function newGame() {
 function showAi() {
   const { game } = ai;
   $("ai-score").textContent = game.score.toLocaleString();
-  $("ai-toggle").textContent = ai.running ? "Pause" : ai.finished ? "Run again" : game.moves ? "Resume" : "Start";
+  $("ai-toggle").textContent = !ai.running
+    ? ai.finished
+      ? "Run again"
+      : game.moves
+        ? "Resume"
+        : "Start"
+    : loadedModels.has(ai.model)
+      ? "Pause"
+      : "Loading…";
 
   if (ai.finished) aiView.showMessage(`Final score ${game.score.toLocaleString()}`);
   else aiView.hideMessage();
