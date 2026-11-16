@@ -87,18 +87,16 @@ function newGame() {
 
 // ---- AI board ---------------------------------------------------------------
 
+function toggleLabel() {
+  if (ai.running) return loadedModels.has(ai.model) ? "Pause" : "Loading…";
+  if (ai.finished) return "Run again";
+  return ai.game.moves ? "Resume" : "Start";
+}
+
 function showAi() {
   const { game } = ai;
   $("ai-score").textContent = game.score.toLocaleString();
-  $("ai-toggle").textContent = !ai.running
-    ? ai.finished
-      ? "Run again"
-      : game.moves
-        ? "Resume"
-        : "Start"
-    : loadedModels.has(ai.model)
-      ? "Pause"
-      : "Loading…";
+  $("ai-toggle").textContent = toggleLabel();
 
   if (ai.finished) aiView.showMessage(`Final score ${game.score.toLocaleString()}`);
   else aiView.hideMessage();
