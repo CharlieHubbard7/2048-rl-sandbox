@@ -100,7 +100,8 @@ def export_ntuple(min_weight=0.0):
     arrays = {}
     for t in range(len(PATTERNS)):
         keys = np.flatnonzero(np.abs(agent.lut[t]) > min_weight)
-        arrays[f"keys{t}"] = keys.astype(np.uint32)
+        # Sorted keys are stored as gaps, which are small and compress well.
+        arrays[f"keys{t}"] = np.diff(keys, prepend=0).astype(np.uint32)
         arrays[f"values{t}"] = agent.lut[t][keys]
     meta = {"cells": CELLS.tolist(), "table_of": TABLE_OF.tolist(), "episodes": agent.episodes}
     path = MODELS / "ntuple.bin.gz"
@@ -115,7 +116,8 @@ def load_ntuple(path):
     _, arrays = read_bundle(path)
     agent = NTupleAgent()
     for t in range(len(PATTERNS)):
-        agent.lut[t][arrays[f"keys{t}"]] = arrays[f"values{t}"]
+        keys = np.cumsum(arrays[f"keys{t}"], dtype=np.int64)
+        agent.lut[t][keys] = arrays[f"values{t}"]
     return agent
 
 
