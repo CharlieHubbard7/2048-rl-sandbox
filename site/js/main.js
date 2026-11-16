@@ -22,6 +22,7 @@ const thinking = new ThinkingPanel($("thinking"), showAi);
 const ai = new AiPlayer(aiView, {
   model: MODELS.some((m) => m.id === saved.model) ? saved.model : DEFAULT_MODEL,
   speed: saved.speed,
+  explain: () => thinking.open,
   onMove(decision) {
     lastDecision = decision;
     showAi();
@@ -131,10 +132,9 @@ $("ai-speed").addEventListener("click", (event) => {
   const { speed } = event.target.dataset;
   if (speed) setSpeed(speed);
 });
+$("open-about").addEventListener("click", () => $("about").showModal());
 
 youView.reset(you);
 showYou();
 ai.reset(seed);
 setSpeed(ai.speed);
-
-$("open-about").addEventListener("click", () => $("about").showModal());
