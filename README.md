@@ -29,6 +29,22 @@ build step and no runtime dependencies.
 | PPO | Actor-critic with invalid-move masking and GAE |
 | Heuristic | Greedy one-move lookahead over empty cells, merge pairs and a snake-shaped corner gradient |
 
+### How strong they are
+
+Thirty seeded games per model, played by the same JavaScript the site runs
+(`npm run benchmark -- 30`):
+
+| Model | Mean score | Median | Reached 2048 | Reached 4096 | Best tile |
+|---|---:|---:|---:|---:|---:|
+| Search + N-tuple | 109,744 | 122,368 | 97% | 97% | 8192 |
+| N-tuple network | 55,334 | 65,720 | 90% | 53% | 4096 |
+| Heuristic | 10,007 | 7,624 | 7% | 0% | 2048 |
+| Deep Q-network | 7,687 | 7,424 | 3% | 0% | 2048 |
+| PPO | 7,351 | 7,620 | 0% | 0% | 1024 |
+
+Training budgets on a laptop CPU: N-tuple 60 minutes (55,000 self-play games),
+DQN and PPO 30 minutes each.
+
 The gap between the N-tuple models and the neural networks is the interesting
 part. An N-tuple network is linear over a huge sparse feature space, so each update
 touches only the 32 weights that describe the board in front of it. The neural
@@ -74,8 +90,8 @@ python3.12 -m venv .venv
 ## Notes
 
 - **Engine:** boards store tile exponents. Every move is a flip or transpose plus a
-  lookup into a table of precomputed line slides. Python batches this with NumPy so
-  training runs thousands of games a minute.
+  lookup into a table of precomputed line slides. Python batches this with NumPy, so
+  the N-tuple network trains on about two thousand games a minute.
 - **Weights:** exports quantise floats to int16 with one scale per array. For the
   N-tuple tables, only weights that training touched are shipped, as sorted keys
   stored as gaps, and the browser looks them up by binary search.
