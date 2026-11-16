@@ -106,11 +106,9 @@ function showAi() {
 }
 
 function toggleAi() {
-  if (ai.running) ai.stop();
-  else if (ai.finished) {
-    ai.reset(seed);
-    ai.start();
-  } else ai.start();
+  if (ai.running) return ai.stop();
+  if (ai.finished) ai.reset(seed); // replay the same tiles from the start
+  ai.start();
 }
 
 function setSpeed(speed) {
