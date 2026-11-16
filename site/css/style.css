@@ -351,7 +351,7 @@ select {
 
 .model select {
   width: 100%;
-  padding: 8px 32px 8px 12px;
+  padding: 8px 28px 8px 12px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--well) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23687488' stroke-width='1.5'/%3E%3C/svg%3E") no-repeat right 12px center;
@@ -368,7 +368,7 @@ select {
 }
 
 .speed button {
-  padding: 5px 12px;
+  padding: 5px 10px;
   border: 0;
   border-radius: 6px;
   background: none;
@@ -385,7 +385,7 @@ select {
 }
 
 #ai-toggle {
-  min-width: 104px;
+  min-width: 92px;
 }
 
 /* ---- Thinking panel -------------------------------------------------------- */
