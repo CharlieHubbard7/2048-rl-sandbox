@@ -96,3 +96,17 @@ def test_game_ignores_invalid_moves():
     _, reward, _, info = g.step(UP)
     assert not info["valid"] and reward == 0
     assert np.array_equal(g.board, before)
+
+
+def test_batch_env_runs_and_resets():
+    from rl2048.env import BatchEnv
+
+    env = BatchEnv(64, seed=0)
+    rng = np.random.default_rng(0)
+    finished = []
+    for _ in range(3000):
+        actions = np.array([rng.choice(np.flatnonzero(m)) for m in env.masks])
+        boards, rewards, dones, info = env.step(actions)
+        finished += info["finished"]
+        assert env.masks.any(axis=1).all()  # every live game has a legal move
+    assert finished and all(f["max_tile"] >= 8 for f in finished)
