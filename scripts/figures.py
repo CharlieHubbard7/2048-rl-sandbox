@@ -21,7 +21,7 @@ INK = "#1d2738"
 MUTED = "#687488"
 GRID = "#e3e8ef"
 SURFACE = "#ffffff"
-FONT = "Manrope, system-ui, -apple-system, 'Segoe UI', sans-serif"
+FONT = "Inter, system-ui, -apple-system, 'Segoe UI', sans-serif"
 
 # Series colours, validated together for colour-blind separation. The gold is
 # light on white, so every chart that uses it labels its lines directly.
