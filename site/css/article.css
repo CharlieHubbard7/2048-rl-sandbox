@@ -42,6 +42,16 @@
   line-height: 1.5;
 }
 
+.asterisk {
+  color: var(--accent);
+}
+
+.footnote {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 15px;
+}
+
 .article h2 {
   margin: 72px 0 8px;
   font-size: 30px;
@@ -77,27 +87,6 @@
   border-radius: 4px;
   background: #e4e9f0;
   font-size: 0.88em;
-}
-
-.article blockquote {
-  margin: 32px 0;
-  padding: 4px 0 4px 24px;
-  border-left: 3px solid var(--accent);
-  font-size: 21px;
-  line-height: 1.5;
-}
-
-.article blockquote p {
-  margin: 0;
-  color: var(--ink);
-}
-
-.article blockquote cite {
-  display: block;
-  margin-top: 8px;
-  color: var(--muted);
-  font-size: 15px;
-  font-style: normal;
 }
 
 /* Figures sit slightly wider than the text column on large screens. */
@@ -143,57 +132,17 @@
   margin: 12px 0 0;
 }
 
-/* The "loss function" box under each algorithm. */
-.loss {
+.note {
   margin: 24px 0;
   padding: 20px 24px;
   border-radius: 12px;
   background: var(--well);
 }
 
-.loss h4 {
-  margin: 0 0 8px;
-  font-size: 15px;
-  font-weight: 700;
-}
-
-.loss p {
-  margin: 8px 0 0;
+.note p {
+  margin: 0;
   font-size: 16px;
   line-height: 1.6;
-}
-
-.loss math {
-  /* Plain `block` would replace MathML's own layout and stack every symbol. */
-  display: block math;
-  margin: 12px 0;
-  font-size: 1.15em;
-  overflow-x: auto;
-}
-
-.facts {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  margin: 24px 0;
-  padding: 0;
-  list-style: none;
-}
-
-.facts li {
-  padding: 14px 16px;
-  border-radius: 10px;
-  background: var(--well);
-  color: var(--muted);
-  font-size: 14px;
-  line-height: 1.4;
-}
-
-.facts strong {
-  display: block;
-  color: var(--ink);
-  font-size: 22px;
-  font-weight: 800;
 }
 
 .article-end {
@@ -228,8 +177,7 @@
     font-size: 17px;
   }
 
-  .figure-pair,
-  .facts {
+  .figure-pair {
     grid-template-columns: 1fr;
   }
 }

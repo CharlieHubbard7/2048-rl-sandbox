@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>How I built Twos</title>
-    <meta name="description" content="From a question about search versus learning to five models playing 2048 in the browser: how Twos was built, including the version I threw away." />
+    <meta name="description" content="From a question about search versus learning to five models playing 2048 in the browser: how Twos was built." />
     <link rel="icon" href="favicon.svg" type="image/svg+xml" />
     <meta name="theme-color" content="#eef1f5" />
     <meta property="og:title" content="How I built Twos" />
@@ -26,34 +26,20 @@
 
     <article class="article">
       <header>
-        <h1>How I built Twos</h1>
+        <h1>How I<span class="asterisk">*</span> built Twos</h1>
         <p class="dek">
           A game of 2048 with a trained model playing the same tiles beside you. This is the path from one
           question about search versus learning to five models running in your browser, including the
           version I threw away.
         </p>
-        <ul class="facts">
-          <li><strong>5</strong> ways to play, from a hand-written rule to search on top of learning</li>
-          <li><strong>55,022</strong> games the best model played against itself while learning</li>
-          <li><strong>0</strong> servers: every model runs in your browser</li>
-        </ul>
+        <p class="footnote">*and Claude</p>
       </header>
 
       <h2>It started in 15-112</h2>
       <p>
         In the fall of 2025 I took <a href="https://www.cs.cmu.edu/~112/">15-112</a>, Carnegie Mellon's
-        introductory programming course, with Professor David Kosbie. The course has a reputation for volume:
-        a lot of problems, each one built up in small pieces, each piece tested before you move on. When I
-        later asked Kosbie what the secret of the course was, his answer was refreshingly plain.
-      </p>
-      <blockquote>
-        <p>“I hate to say it, but the secret is volume.”</p>
-        <cite>David Kosbie, on my podcast</cite>
-      </blockquote>
-      <p>
-        That habit of building small and testing everything ended up being the backbone of this project. So
-        did the other thing 112 gave me: the confidence that a game is just a program, and a program is
-        something I can take apart.
+        introductory programming course, with Professor David Kosbie. This was a paradigm changing class for
+        me, which culminated in a term project where we coded a game from scratch (no AI).
       </p>
 
       <h2>Watching Code Bullet beat it</h2>
@@ -62,7 +48,7 @@
         <a href="https://www.youtube.com/watch?v=1g1HCYTX3Rg">AI learns to play 2048</a>. He builds
         <a href="https://en.wikipedia.org/wiki/2048_(video_game)">the game</a> from scratch and then an AI
         that plays it, and his <a href="https://github.com/Code-Bullet/2048-AI">project</a> describes the
-        approach as a look-ahead algorithm: try the moves, see where they lead, pick the best.
+        approach as a look-ahead algorithm in which you try the moves, see where they lead, pick the best.
       </p>
       <figure>
         <iframe
@@ -75,45 +61,13 @@
         <figcaption>Code Bullet's video was the spark. His AI looks ahead rather than learning from experience.</figcaption>
       </figure>
       <p>
-        What stuck with me was the question underneath it. His AI searches. Most of the
+        His AI searches, whereas most of the
         <a href="https://en.wikipedia.org/wiki/Reinforcement_learning">reinforcement learning</a> I had read
-        about learns from experience instead, playing thousands of games and slowly getting better. Which one
-        actually works better on a game like this? And could you combine them? That question became the
-        project.
+        about learns from experience instead, playing thousands of games and slowly getting better. I wanted
+        to see which one actually works better on a game like this. And could you combine them?
       </p>
 
-      <h2>Trying it myself first</h2>
-      <p>
-        I talked with Kosbie about how AI is changing the way students learn in an episode of my podcast
-        (<a href="https://open.spotify.com/episode/6iPdradZ3Yok0iUAZhYZ5V">Spotify</a>,
-        <a href="https://www.youtube.com/watch?v=tt__D4LEq7g">YouTube</a>, and
-        <a href="https://charliehubbard.substack.com/p/the-professor-who-made-me-think-differently">my write-up</a>).
-        He passed along a framing from Zico Kolter, who heads CMU's machine learning department, that I keep
-        coming back to.
-      </p>
-      <blockquote>
-        <p>“AI is great at helping you do things you can already do.”</p>
-        <cite>Zico Kolter, as Kosbie told it</cite>
-      </blockquote>
-      <p>
-        The other half of that idea is the warning: it is dangerous when it does things for you that you
-        cannot do. So before touching any learning algorithm, I started with the parts I could reason through
-        on paper: the rules of the game, and a strategy for playing it. When I did lean on AI tools later, I
-        tried to hold myself to that line. Use them to go faster on pieces I could already explain, and make
-        sure I could explain every piece by the end. This page is partly that explanation.
-      </p>
-      <figure>
-        <iframe
-          src="https://www.youtube-nocookie.com/embed/tt__D4LEq7g"
-          title="David Kosbie: Lessons from a Life in Teaching and Technology"
-          loading="lazy"
-          allow="encrypted-media; picture-in-picture"
-          allowfullscreen
-        ></iframe>
-        <figcaption>My conversation with David Kosbie on teaching, effort and what AI is doing to learning.</figcaption>
-      </figure>
-
-      <h3>The rules are trickier than they look</h3>
+      <h2>The rules are trickier than they look</h2>
       <p>
         2048 looks simple until you write it down. A tile can only merge once per move, so a row of
         <code>2 2 2 2</code> slides left to <code>4 4</code>, not <code>8</code>. A row of <code>2 2 4</code>
@@ -134,39 +88,19 @@
         <figcaption>Every slide is a table lookup. The table is built once from the same merge rules the tests check.</figcaption>
       </figure>
 
-      <h3>My strategy, written down</h3>
+      <h2>Implementing my strategy</h2>
       <p>
-        The way most people learn to play 2048 is to pick a corner, park the biggest tile there, and keep a
-        descending chain behind it so merges keep cascading toward the corner. I turned that into a
+        The way most people learn to play 2048 (and the way I played during boring high-school classes) is to
+        pick a corner, park the biggest tile there, and keep a descending chain behind it so merges keep
+        cascading toward the corner. I turned that into a
         <a href="https://en.wikipedia.org/wiki/Heuristic_(computer_science)">heuristic</a>: a score for any
-        board that rewards big tiles near the corner along a snake-shaped path, empty cells, and neighbouring
-        tiles that can merge, and penalises big jumps between neighbours. The player looks one move ahead and
+        board that rewards big tiles near the corner along a snake-shaped path, empty cells, and neighboring
+        tiles that can merge, and penalizes big jumps between neighbors. The player looks one move ahead and
         picks whichever move leads to the best-scoring board.
       </p>
       <p>
-        It worked better than I expected. Random moves average about 1,000 points. The heuristic averages
-        10,007 and reaches 2048 in 7% of games. That number became the bar: any learning method that couldn't
-        beat my hand-written rule wasn't learning anything worth having.
-      </p>
-
-      <h2>Version one: a lab, not a game</h2>
-      <figure>
-        <img src="img/methodology/v1-dashboard.webp" alt="A dark dashboard with an agent selector, a 2048 board covered by a 'No moves left' message at score 0, move value bars, three training charts and a benchmark table." loading="lazy" />
-        <figcaption>The first version, mid-training. Notice the board: score 0, and it already says "No moves left".</figcaption>
-      </figure>
-      <p>
-        My first full build was a sandbox. A Python server (FastAPI) ran the game and streamed every board
-        over a WebSocket to a dashboard with an agent picker, the agent's value for each move, a heatmap, live
-        training charts, saved checkpoints, and an arena that benchmarked every agent on the same games. As a
-        tool for me, it was great. It is where everything in the next section was trained and compared.
-      </p>
-      <p>
-        As something anyone else would use, it failed in two ways. The game lived on the server, so every
-        visitor shared one board: if one person lost, everyone had lost. And a one-line CSS bug meant the
-        game-over message could never hide. The overlay set <code>display: grid</code>, which quietly overrides
-        HTML's <code>hidden</code> attribute, so the board announced "No moves left" before anyone had made a
-        move. You can see it in the screenshot above. Both of those pushed me toward the second version, but
-        first, the models.
+        It turned out that by random moves alone you can achieve an average score of about 1,000 points. The
+        heuristic approach averages 10,007 and reaches 2048 in 7% of games.
       </p>
 
       <h2>Five ways to play</h2>
@@ -174,62 +108,44 @@
         Every approach plays the same game, framed the same way: a
         <a href="https://en.wikipedia.org/wiki/Markov_decision_process">Markov decision process</a>. The state
         is the board, the action is one of four moves, and the reward is the points from whatever merged. What
-        separates the methods is how they decide, and, for the ones that learn, what they are trained to make
-        small. That quantity is the <a href="https://en.wikipedia.org/wiki/Loss_function">loss function</a>,
-        and I've written each one out below because it says more about a method than any description.
+        separates them is how they decide which move to make.
       </p>
+      <aside class="note">
+        <p>
+          <strong>A note on how I built this.</strong> I built this project through paired development with
+          AI, mostly to get hands-on exposure to model types I had only read about. AI wrote a lot of the code
+          and helped write the explanations below. I've kept them simple on purpose, because I'm still
+          learning how these models work and don't want to claim more than I understand.
+        </p>
+      </aside>
 
       <h3>1. The heuristic</h3>
       <p>
         Covered above: a score I designed by hand, and a one-move lookahead. It's in the lineup as the floor.
       </p>
-      <div class="loss">
-        <h4>Loss function</h4>
-        <p>None. Nothing is learned; every weight in the score is a number I picked and tuned by watching it play.</p>
-      </div>
+      <p>
+        Nothing is learned here: every weight in the score is a number I picked and tuned by watching it play.
+      </p>
 
       <h3>2. The N-tuple network, trained with temporal-difference learning</h3>
       <p>
-        This is the approach most 2048 research builds on, and the one I read about in
-        <a href="https://arxiv.org/abs/1606.07374">Yeh et al. (2016)</a>. Instead of a neural network, the
-        value of a board is a sum of numbers looked up in big tables. Four patterns of six cells each are laid
-        over the board in all eight rotations and reflections, and each placement reads the tiles under it as
-        an index into that pattern's table. Thirty-two lookups, added up, is the network's opinion of the
-        board.
+        This is the approach most 2048 research builds on, from
+        <a href="https://arxiv.org/abs/1606.07374">Yeh et al. (2016)</a>. Instead of a neural network, it
+        scores a board by looking at a few small groups of cells and adding up numbers from a lookup table for
+        each group. Training is just adjusting those numbers.
       </p>
       <figure>
         <img src="img/methodology/ntuple-patterns.svg" alt="Four 4 by 4 grids, each with six highlighted cells: the top row plus two cells below, the second row plus two, a 2 by 3 block in the corner, and a 2 by 3 block one row down." loading="lazy" />
         <figcaption>The four patterns, drawn straight from the code. Sharing each one across all eight symmetries means one game teaches every orientation at once.</figcaption>
       </figure>
       <p>
-        It values <em>afterstates</em>: the board right after my slide, before the random tile lands. That
-        detail matters more than it sounds. The randomness of where a tile appears is the part I can't
-        control, so learning the value of the board just before it strips the noise out of what the network
-        is asked to learn. To choose a move, it adds the merge reward to the value of the resulting
-        afterstate and takes the best.
+        It scores the board right after my move, before the random new tile appears, which takes some of the
+        luck out of what it has to learn.
       </p>
       <p>
         It learns with <a href="https://en.wikipedia.org/wiki/Temporal_difference_learning">temporal-difference
-        learning</a>: after each move, nudge the value of where I was toward the reward I got plus the value
-        of where I ended up. I run the updates backwards from the end of each game, so the final outcome
-        reaches the early moves in one pass instead of creeping back one game at a time.
+        learning</a>: after each move, it nudges its score for the old board toward what actually happened next.
       </p>
-      <div class="loss">
-        <h4>Loss function: the TD error</h4>
-        <math display="block">
-          <mi>δ</mi><mo>=</mo><msub><mi>r</mi><mrow><mi>t</mi><mo>+</mo><mn>1</mn></mrow></msub><mo>+</mo>
-          <mi>V</mi><mo stretchy="false">(</mo><msubsup><mi>s</mi><mrow><mi>t</mi><mo>+</mo><mn>1</mn></mrow><mo>′</mo></msubsup><mo stretchy="false">)</mo>
-          <mo>−</mo><mi>V</mi><mo stretchy="false">(</mo><msubsup><mi>s</mi><mi>t</mi><mo>′</mo></msubsup><mo stretchy="false">)</mo>
-        </math>
-        <math display="block">
-          <mi>L</mi><mo>=</mo><mfrac><mn>1</mn><mn>2</mn></mfrac><msup><mi>δ</mi><mn>2</mn></msup>
-        </math>
-        <p>
-          <i>s′</i> is an afterstate and <i>r</i> the points from the next move. Each step adds
-          <i>αδ</i>/32 to each of the 32 weights that were active, with <i>α</i> = 0.1. Because the value is
-          a plain sum, that is exactly a gradient step on <i>L</i>, and it only ever touches 32 numbers.
-        </p>
-      </div>
       <p>
         It learned fast. In a 60-minute run it played 55,022 games against itself, and the share of its
         recent games reaching 2048 went from zero to 90%.
@@ -242,50 +158,20 @@
       <h3>3. The deep Q-network</h3>
       <p>
         <a href="https://en.wikipedia.org/wiki/Q-learning#Deep_Q-learning">Deep Q-learning</a> is the method
-        famous for learning Atari games from pixels. Here a
-        <a href="https://en.wikipedia.org/wiki/Convolutional_neural_network">convolutional network</a> reads the
-        board as sixteen <a href="https://en.wikipedia.org/wiki/One-hot">one-hot</a> planes, one per tile
-        value, so that a 1024 next to a 2048 looks as different as it is. It outputs a Q-value for each move:
-        how many more points it expects if it makes that move and plays well afterwards. The convolutions are
-        2×2, which covers exactly the pairs of neighbours that can merge.
+        made famous for learning Atari games. A neural network looks at the board and estimates how many
+        points each of the four moves will lead to, then picks the highest.
       </p>
       <figure>
         <img src="img/methodology/networks.svg" alt="Diagram: the board as 16 one-hot planes feeds two 2 by 2 convolutions and a dense layer of 256, which splits into a DQN head of four Q-values or PPO heads of four probabilities plus a value." loading="lazy" />
         <figcaption>DQN and PPO share the same body and differ only in what comes out of it.</figcaption>
       </figure>
       <p>
-        The rest is the standard recipe, plus two choices specific to this game. It plays 32 games at once
-        and stores 200,000 recent moves in a replay buffer to train on. It explores randomly at first and
-        less over time. A slowly-updated copy of the network supplies the targets so it isn't chasing itself.
-        The two 2048-specific choices: illegal moves are masked out rather than punished, and rewards are
-        squashed with a logarithm, because a 2048 merge is worth a thousand times a 4 merge and raw points
-        made the targets explode late in games.
+        It trains by playing lots of games at once, saving recent moves, and learning from them in batches.
+        It skips illegal moves, and it shrinks big rewards so late-game merges don't throw the training off.
       </p>
-      <div class="loss">
-        <h4>Loss function: Huber loss on the Double DQN target</h4>
-        <math display="block">
-          <mi>y</mi><mo>=</mo><mi>r</mi><mo>+</mo><mi>γ</mi>
-          <msub><mi>Q</mi><msup><mi>θ</mi><mo>−</mo></msup></msub><mo stretchy="false">(</mo><msup><mi>s</mi><mo>′</mo></msup><mo>,</mo>
-          <munder><mrow><mi>arg</mi><mo>⁡</mo><mi>max</mi></mrow><mrow><msup><mi>a</mi><mo>′</mo></msup><mtext> legal</mtext></mrow></munder>
-          <msub><mi>Q</mi><mi>θ</mi></msub><mo stretchy="false">(</mo><msup><mi>s</mi><mo>′</mo></msup><mo>,</mo><msup><mi>a</mi><mo>′</mo></msup><mo stretchy="false">)</mo><mo stretchy="false">)</mo>
-        </math>
-        <math display="block">
-          <mi>L</mi><mo>=</mo><mtext>Huber</mtext><mo stretchy="false">(</mo>
-          <msub><mi>Q</mi><mi>θ</mi></msub><mo stretchy="false">(</mo><mi>s</mi><mo>,</mo><mi>a</mi><mo stretchy="false">)</mo><mo>−</mo><mi>y</mi><mo stretchy="false">)</mo>
-        </math>
-        <p>
-          The online network <i>θ</i> picks the next move and the slow copy <i>θ⁻</i> scores it, which
-          keeps Q-learning from overrating moves. <i>γ</i> = 0.99, and
-          <a href="https://en.wikipedia.org/wiki/Huber_loss">Huber loss</a> behaves like squared error for
-          small mistakes and like absolute error for big ones, so one wild target can't wreck a batch.
-        </p>
-      </div>
       <p>
-        My first DQN trained painfully slowly, about 1,000 moves a second. I profiled it expecting my own code
-        to be the problem, and it wasn't: PyTorch's CPU convolution, on a build without Intel's MKLDNN
-        library, spent 16 milliseconds a step on convolutions this tiny. A 2×2 convolution is the same math
-        as multiplying stacked 2×2 patches by a matrix, so I wrote it that way, proved it identical with a
-        unit test, and got a 7× faster training step.
+        The first version trained very slowly. Rewriting one piece of the network's math in an equivalent but
+        faster way made training about 7× faster.
       </p>
       <figure>
         <img src="img/methodology/conv-speed.svg" alt="Bar chart: one training step takes 16 milliseconds with nn.Conv2d and 2.16 milliseconds with PairConv." loading="lazy" />
@@ -299,37 +185,13 @@
       <h3>4. PPO</h3>
       <p>
         <a href="https://en.wikipedia.org/wiki/Proximal_policy_optimization">Proximal policy optimization</a>
-        learns a policy directly, a probability for each move, rather than a value for each. It is an
-        <a href="https://en.wikipedia.org/wiki/Actor-critic_algorithm">actor-critic</a> method: the same network
-        body has a policy head (the actor) and a value head (the critic) that estimates how good the position
-        is, so the actor can be told whether a move turned out better or worse than expected. It plays 64
-        games for 128 moves, learns from that batch for four passes, and repeats.
+        learns which move to make directly, as a probability for each move, along with a guess at how good the
+        position is. It plays a batch of games, learns from them, and repeats.
       </p>
       <p>
-        Masking mattered even more here. Late in a game there are often only one or two legal moves, and an
-        unmasked policy wastes most of its probability learning that the others do nothing. I set illegal
-        moves' scores to a huge negative number before the softmax. Not negative infinity, which turns the
-        entropy term into "zero times infinity" and fills the training with NaNs.
+        Like the DQN, it ignores illegal moves, which mattered a lot late in games when only one or two moves
+        are possible.
       </p>
-      <div class="loss">
-        <h4>Loss function: the clipped surrogate objective</h4>
-        <math display="block">
-          <mi>L</mi><mo>=</mo><mo>−</mo><mi>min</mi><mo stretchy="false">(</mo><mi>ρ</mi><mover><mi>A</mi><mo>^</mo></mover><mo>,</mo>
-          <mtext>clip</mtext><mo stretchy="false">(</mo><mi>ρ</mi><mo>,</mo><mn>1</mn><mo>−</mo><mi>ε</mi><mo>,</mo><mn>1</mn><mo>+</mo><mi>ε</mi><mo stretchy="false">)</mo>
-          <mover><mi>A</mi><mo>^</mo></mover><mo stretchy="false">)</mo><mo>+</mo><msub><mi>c</mi><mi>v</mi></msub>
-          <mfrac><mn>1</mn><mn>2</mn></mfrac><msup><mrow><mo stretchy="false">(</mo><mi>V</mi><mo stretchy="false">(</mo><mi>s</mi><mo stretchy="false">)</mo><mo>−</mo><mi>R</mi><mo stretchy="false">)</mo></mrow><mn>2</mn></msup>
-          <mo>−</mo><msub><mi>c</mi><mi>e</mi></msub><mi>H</mi><mo stretchy="false">(</mo><mi>π</mi><mo stretchy="false">)</mo>
-        </math>
-        <math display="block">
-          <mi>ρ</mi><mo>=</mo>
-          <mfrac><mrow><msub><mi>π</mi><mi>θ</mi></msub><mo stretchy="false">(</mo><mi>a</mi><mo>∣</mo><mi>s</mi><mo stretchy="false">)</mo></mrow><mrow><msub><mi>π</mi><mtext>old</mtext></msub><mo stretchy="false">(</mo><mi>a</mi><mo>∣</mo><mi>s</mi><mo stretchy="false">)</mo></mrow></mfrac>
-        </math>
-        <p>
-          <i>Â</i> is the advantage, how much better a move went than the critic expected, estimated with
-          GAE (λ = 0.95). Clipping <i>ρ</i> to within <i>ε</i> = 0.2 of 1 stops a single batch from moving the
-          policy too far. The second term trains the critic, and the entropy bonus <i>H</i> keeps it exploring.
-        </p>
-      </div>
       <p>
         After 30 minutes and about 52,700 games, it averaged 7,351 and never reached 2048. Also below my
         heuristic.
@@ -337,28 +199,22 @@
 
       <h3>5. Search on top of learning</h3>
       <p>
-        This is where Code Bullet's idea came back. <a href="https://en.wikipedia.org/wiki/Expectiminimax">Expectimax</a>
-        search looks ahead the way he did, but treats the game honestly: I choose my move, so it takes the best
-        move, but the game chooses where the next tile lands, so it averages over every empty cell with a 2
-        (90%) or a 4 (10%). Instead of searching until the game ends, it stops after one or two levels and asks
-        the N-tuple network how good the board looks.
+        This is where Code Bullet's idea came back.
+        <a href="https://en.wikipedia.org/wiki/Expectiminimax">Expectimax</a> search looks a move or two ahead,
+        like his AI did, and averages over where the next random tile could land. Instead of searching all the
+        way to the end of the game, it stops and asks the N-tuple network how good the board looks.
       </p>
       <figure>
         <img src="img/methodology/expectimax-tree.svg" alt="Tree diagram: the board branches into up, left and right moves; each move branches into every possible new tile, weighted by probability; the leaves are scored by the N-tuple network." loading="lazy" />
         <figcaption>Max over my moves, average over the game's tiles, and learned values where the search stops.</figcaption>
       </figure>
       <p>
-        It searches one level normally and two when fewer than four cells are empty. Crowded boards are the
-        most dangerous and also the cheapest to search, because there are few places a tile can land.
+        It looks further ahead when the board is crowded, since that's when a mistake costs the most.
       </p>
-      <div class="loss">
-        <h4>Loss function</h4>
-        <p>
-          None of its own. It borrows everything the N-tuple network learned and spends computation instead:
-          the value of a move is its reward plus the probability-weighted best value of every board the next
-          tile could create.
-        </p>
-      </div>
+      <p>
+        It doesn't learn anything new on its own. It just combines what the N-tuple network learned with a
+        little lookahead.
+      </p>
 
       <h3>How they compare</h3>
       <figure>
@@ -366,11 +222,8 @@
         <figcaption>Average score of recent training games. All three trained at the same time on one laptop CPU.</figcaption>
       </figure>
       <p>
-        The neural networks got half the training time, so this isn't a perfectly fair fight. But look at the
-        shape: their curves had flattened, while the N-tuple network was still climbing at the hour mark. I
-        think the reason is structure. The N-tuple network starts out knowing which groups of cells matter and
-        only has to learn the numbers. The networks have to discover that structure from scratch, in a game
-        where a single bad move can lose thousands of moves of progress.
+        The neural networks got half the training time, so this isn't a perfectly fair comparison. But the
+        N-tuple network was still improving at the hour mark, while the neural networks had leveled off.
       </p>
       <figure>
         <img src="img/methodology/benchmark.svg" alt="Bar chart of mean score over 30 seeded games: Search plus N-tuple 109,744; N-tuple network 55,334; Heuristic 10,007; Deep Q-network 7,687; PPO 7,351." loading="lazy" />
@@ -383,12 +236,6 @@
       </p>
 
       <h2>Version two: a game first</h2>
-      <p>
-        With the models working, I went back to the problem with version one. I wanted someone to land on the
-        page and simply play: no panels, no charts, nothing to read first. So I rebuilt it around the game.
-        Your board is on the left. A model plays its own board on the right. Everything the dashboard used to
-        show is still there, behind a single "Show what it's thinking" toggle.
-      </p>
       <figure>
         <img src="img/methodology/v2-site.webp" alt="The current site: your board on the left early in a game, the AI's board on the right at about 12,000 points with a 1024 tile, and the AI's move ratings open below it." loading="lazy" />
         <figcaption>The page as it is now. The model has been playing for under a minute.</figcaption>
@@ -420,19 +267,7 @@
         Version one needed a Python server for every move. Version two has no server at all. I trained the
         models in Python, exported their weights to small files, and rewrote the game and all five players in
         plain JavaScript that runs in a background thread (a web worker), so the animations never stutter while
-        the search is thinking. The neural network forward pass is about a hundred lines with no libraries, and
-        because the input is one-hot, its first layer doesn't even multiply: each tile just selects a column of
-        weights.
-      </p>
-      <figure>
-        <img src="img/methodology/pipeline.svg" alt="Pipeline diagram: train in Python, export with pruning, int16 quantisation and gzip, ship the files with the site, run them in a JavaScript web worker, play in the browser. Parity tests span export to worker." loading="lazy" />
-        <figcaption>Two implementations of everything, held together by tests.</figcaption>
-      </figure>
-      <p>
-        Two implementations of the same thing will drift apart unless something stops them. So the exporter
-        also writes test cases: real positions, with Python's answers for every move, every board value,
-        every search result and every network output, computed from the exact weights the browser downloads.
-        The JavaScript tests have to reproduce all of them, and they run on every push.
+        the search is thinking.
       </p>
 
       <h3>Fitting the model through a phone connection</h3>
@@ -451,30 +286,6 @@
         <img src="img/methodology/v2-mobile.webp" alt="The site on a phone: the Twos title, a short description, links, and your board with a swipe hint." loading="lazy" />
         <figcaption>On a phone the boards stack and you swipe to move.</figcaption>
       </figure>
-
-      <h2>What I'd tell myself at the start</h2>
-      <ul>
-        <li>
-          <strong>Build the boring parts first, and test them.</strong> The merge rules hide more edge cases
-          than you'd think. Every model after that stood on them, and so did the browser port.
-        </li>
-        <li>
-          <strong>Search and learning beat either one alone.</strong> The best player here is a shallow
-          search with learned judgement at the leaves.
-        </li>
-        <li>
-          <strong>Structure beats size.</strong> A model that knows which cells to look at learned in minutes
-          what the neural networks hadn't learned in half an hour.
-        </li>
-        <li>
-          <strong>Measure before guessing.</strong> I was sure the slow DQN was my fault, and sure every weight
-          mattered. Profiling and a sweep said otherwise both times.
-        </li>
-        <li>
-          <strong>Build for the person using it.</strong> Version one was the right tool for me and the wrong
-          page for everyone else.
-        </li>
-      </ul>
 
       <h2>What's next</h2>
       <p>
