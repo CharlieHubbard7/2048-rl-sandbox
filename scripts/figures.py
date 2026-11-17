@@ -334,24 +334,6 @@ def networks():
     svg.save("networks.svg")
 
 
-def pipeline():
-    svg = Svg(720, 170, "From training in Python to playing in the browser")
-    svg.add(ARROW_HEAD)
-    steps = [("Train", "NumPy + PyTorch"), ("Export", "prune, int16, gzip"), ("Ship", "site/models"),
-             ("Worker", "plain JavaScript"), ("Board", "your browser")]  # fmt: skip
-    for i, (title, sub) in enumerate(steps):
-        x = 12 + i * 142
-        box(svg, x, 20, 124, 56, title, sub, "#fff" if i in (0, 4) else "#f4f6f9")
-        if i:
-            arrow(svg, x - 16, 48, x - 2, 48)
-    svg.add(
-        f'<path d="M 216 92 v 14 h 284 v -14" fill="none" stroke="{SERIES["ntuple"]}" stroke-width="1.5"/>'
-    )
-    svg.text(358, 128, "parity tests: the JavaScript must reproduce", 13, INK, "middle", 600)
-    svg.text(358, 146, "Python's moves, values and network outputs", 13, MUTED, "middle")
-    svg.save("pipeline.svg")
-
-
 if __name__ == "__main__":
     learning_curves()
     benchmark()
@@ -361,4 +343,3 @@ if __name__ == "__main__":
     ntuple_patterns()
     expectimax_tree()
     networks()
-    pipeline()
