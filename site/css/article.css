@@ -131,6 +131,16 @@
   grid-template-columns: 1fr 1fr;
   gap: 16px;
   align-items: start;
+  margin: 36px -40px;
+}
+
+/* The pair takes the wide margins, so the figures inside must not. */
+.article .figure-pair figure {
+  margin: 0;
+}
+
+.article .figure-pair figcaption {
+  margin: 12px 0 0;
 }
 
 /* The "loss function" box under each algorithm. */
@@ -203,7 +213,8 @@
 }
 
 @media (max-width: 860px) {
-  .article figure {
+  .article figure,
+  .figure-pair {
     margin: 32px 0;
   }
 
