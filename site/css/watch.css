@@ -21,15 +21,6 @@
   display: none;
 }
 
-kbd {
-  padding: 1px 6px;
-  border: 1px solid var(--line);
-  border-bottom-width: 2px;
-  border-radius: 5px;
-  background: var(--well);
-  font: 600 12px/1.4 var(--font);
-}
-
 /* ---- The board and its controls ------------------------------------------ */
 
 .stage {
@@ -43,7 +34,7 @@ kbd {
 }
 
 .model-picker button {
-  padding: 6px 11px;
+  padding: 5px 12px;
   border: 1px solid var(--line);
   border-radius: 999px;
   background: none;
@@ -65,35 +56,33 @@ kbd {
 }
 
 .model-blurb {
-  min-height: 4.5em;
-  margin: 14px 0 18px;
+  min-height: 3em;
+  margin: 12px 0 20px;
   color: #45516a;
   font-size: 15px;
   line-height: 1.5;
 }
 
+/* Score, move and best tile as one quiet line above the board. */
 .stats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  margin-bottom: 14px;
-}
-
-.stat {
-  padding: 6px 12px;
-  border-radius: 8px;
-  background: var(--well);
-}
-
-.stat span {
-  display: block;
+  display: flex;
+  align-items: baseline;
+  gap: 20px;
+  margin-bottom: 12px;
   color: var(--muted);
-  font-size: 12px;
+  font-size: 14px;
 }
 
-.stat strong {
-  font-size: 19px;
+.stats strong {
+  margin-left: 4px;
+  color: var(--ink);
+  font-size: 16px;
   font-weight: 700;
+}
+
+.stats .link {
+  margin-left: auto;
+  font-size: 14px;
 }
 
 .transport {
@@ -142,52 +131,17 @@ kbd {
   color: var(--ink);
 }
 
-.transport-foot {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 12px;
-  font-size: 14px;
-}
-
-@media (pointer: coarse) {
-  .transport-foot .caption {
-    visibility: hidden;
-  }
-}
-
 /* ---- What it's thinking ---------------------------------------------------- */
 
 .mind {
   min-width: 0;
 }
 
-.mind-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 16px;
-}
-
-.mind-head h2,
-.explainer-head h2 {
-  font-size: 22px;
+.mind h2,
+.explainer h2 {
+  font-size: 18px;
   font-weight: 700;
-  letter-spacing: -0.015em;
-}
-
-.mind-meta {
-  margin: 0;
-  color: var(--muted);
-  font-size: 13px;
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-
-.mind-lede {
-  margin: 6px 0 18px;
-  color: #45516a;
-  font-size: 15px;
+  letter-spacing: -0.01em;
 }
 
 .futures,
@@ -200,10 +154,11 @@ kbd {
   opacity: 0.45;
 }
 
-.future-row {
+.futures {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px;
+  margin-top: 14px;
 }
 
 .future {
@@ -277,12 +232,16 @@ kbd {
   background: #fdf4f1;
 }
 
-.mind-empty {
-  margin: 0;
-  padding: 24px;
-  border-radius: 12px;
-  background: var(--well);
-  color: var(--muted);
+.verdict {
+  min-height: 1.5em;
+  margin: 14px 0 0;
+  color: #45516a;
+  font-size: 15px;
+}
+
+.verdict strong {
+  color: var(--accent);
+  font-weight: 700;
 }
 
 /* Mini boards, as HTML, reusing the real tile faces. */
@@ -324,61 +283,55 @@ kbd {
   flex: none;
 }
 
-/* The number line: where each move landed, worst to best. */
-.number-line {
-  display: block;
-  width: 100%;
-  height: auto;
-  margin-top: 6px;
-  overflow: visible;
-}
-
-.nl-axis {
-  fill: none;
-  stroke: #b9c3d1;
-  stroke-width: 1.4;
-  stroke-linecap: round;
-}
-
-.nl-dot circle {
-  fill: var(--muted);
-}
-
-.nl-dot text {
-  fill: var(--muted);
-  font: 600 13px var(--font);
-}
-
-.nl-stem {
-  stroke: #d5dce6;
-  stroke-width: 1;
-}
-
-.nl-dot.is-chosen circle {
-  fill: var(--accent);
-}
-
-.nl-dot.is-chosen text {
-  fill: var(--accent);
-}
-
-.nl-end {
-  fill: #a3adbd;
-  font: 13px var(--hand);
-}
-
 /* ---- Inside the score -------------------------------------------------------- */
 
-.why {
-  margin-top: 18px;
-  padding-top: 18px;
+/* Folded away until asked for. */
+.inside {
+  margin-top: 28px;
   border-top: 1px solid var(--line);
 }
 
-.why-title {
-  margin: 0 0 12px;
-  font-size: 16px;
+.inside summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 0;
   font-weight: 700;
+  cursor: pointer;
+  list-style: none;
+}
+
+.inside summary::-webkit-details-marker {
+  display: none;
+}
+
+.inside summary::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  margin: 0 2px;
+  border-right: 1.5px solid var(--muted);
+  border-bottom: 1.5px solid var(--muted);
+  transform: rotate(-45deg);
+  transition: transform 160ms ease;
+}
+
+.inside[open] summary::before {
+  transform: rotate(45deg);
+}
+
+.inside summary:hover {
+  color: var(--ink);
+}
+
+.why {
+  padding-bottom: 8px;
+}
+
+.why-lede {
+  margin: 0 0 14px;
+  color: var(--muted);
+  font-size: 14px;
 }
 
 .why-sum {
@@ -706,48 +659,35 @@ kbd {
 /* ---- How it decides (the hand-drawn explainer) ------------------------------ */
 
 .explainer {
-  grid-column: 1 / -1;
-  padding: 28px 32px 24px;
-  border-radius: 18px;
-  background: var(--well);
-  box-shadow: 0 1px 2px rgb(29 39 56 / 5%), 0 10px 30px rgb(29 39 56 / 5%);
+  margin-top: 28px;
+  padding-top: 22px;
+  border-top: 1px solid var(--line);
 }
 
 .explainer-head {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   gap: 16px;
-}
-
-.explainer-sub {
-  margin: 4px 0 0;
-  color: var(--muted);
-  font-size: 14px;
 }
 
 .explainer-controls {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
 }
 
 .icon-button {
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   padding: 0;
   border: 0;
   border-radius: 50%;
   background: none;
   color: var(--muted);
-  font-size: 18px;
-  line-height: 1;
-  cursor: pointer;
-}
-
-#ex-play {
   font-size: 11px;
   letter-spacing: -0.1em;
+  cursor: pointer;
 }
 
 .icon-button:hover {
@@ -764,14 +704,14 @@ kbd {
 }
 
 .ex-steps button {
-  width: 26px;
-  height: 26px;
+  width: 24px;
+  height: 24px;
   padding: 0;
   border: 1.5px solid var(--line);
   border-radius: 50%;
   background: none;
   color: var(--muted);
-  font: 600 13px var(--hand);
+  font: 600 12px var(--hand);
   cursor: pointer;
 }
 
@@ -782,33 +722,34 @@ kbd {
 }
 
 .ex-caption {
-  display: flex;
-  gap: 14px;
-  align-items: baseline;
-  max-width: 68ch;
-  min-height: 4.6em;
-  margin: 18px 0 4px;
-  font-size: 16px;
+  min-height: 3.1em;
+  margin: 10px 0 4px;
+  color: #45516a;
+  font-size: 15px;
   line-height: 1.55;
 }
 
-.ex-num {
-  flex: none;
-  color: var(--accent);
-  font: 600 26px/1 var(--hand);
+/* The camera: the drawing stays near full size and pans between steps. */
+.ex-figure {
+  overflow: hidden;
+  padding-bottom: 6px;
+  /* Soft edges, so whatever the camera crops fades out rather than cuts off. */
+  mask-image: linear-gradient(to right, transparent, #000 20px, #000 calc(100% - 20px), transparent);
 }
 
 .ex-figure svg {
   display: block;
-  width: 100%;
+  width: calc(100% * var(--zoom, 1));
   height: auto;
   overflow: visible;
+  transform: translateX(var(--pan, 0));
+  transition: transform 800ms cubic-bezier(0.5, 0, 0.3, 1);
 }
 
 .ex-empty {
   display: grid;
   place-items: center;
-  aspect-ratio: 720 / 320;
+  height: 280px;
   margin: 0;
   color: var(--muted);
   font-family: var(--hand);
@@ -987,6 +928,7 @@ kbd {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .ex-figure svg,
   .ex-figure [data-stage],
   .ex-figure .draw,
   .ex-figure .arrow .tip {
@@ -1002,8 +944,7 @@ kbd {
     justify-items: center;
   }
 
-  .mind,
-  .explainer {
+  .mind {
     width: 100%;
     max-width: 640px;
   }
@@ -1015,7 +956,16 @@ kbd {
     padding-top: 24px;
   }
 
-  .future-row {
+  .model-picker {
+    gap: 4px;
+  }
+
+  .model-picker button {
+    padding: 5px 9px;
+    font-size: 13px;
+  }
+
+  .futures {
     gap: 6px;
   }
 
@@ -1042,35 +992,17 @@ kbd {
     flex-direction: column;
   }
 
-  .explainer {
-    padding: 20px 16px 16px;
-    border-radius: 14px;
-  }
-
   .explainer-head {
     flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
   }
 
   .ex-caption {
-    font-size: 15px;
-    min-height: 7em;
+    min-height: 4.7em;
   }
 
-  /* The camera: draw at 720/420 of the width and pan between steps. */
   .ex-figure {
     margin: 0 -16px;
-    padding-bottom: 10px;
-    overflow: hidden;
-  }
-
-  .ex-figure svg {
-    width: calc(100% * 720 / 420);
-    transform: translateX(var(--pan, 0));
-    transition: transform 700ms cubic-bezier(0.5, 0, 0.3, 1);
-  }
-
-  .mind-head {
-    flex-direction: column;
-    gap: 2px;
   }
 }

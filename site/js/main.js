@@ -14,7 +14,7 @@ const $ = (id) => document.getElementById(id);
 const saved = store.load();
 
 function persist() {
-  store.save({ seed, best, you: you.serialize(), model: ai.model, pace: ai.pace });
+  store.save({ seed, best, you: you.serialize(), model: ai.model, pace: ai.pace, inside: $("inside").open });
 }
 
 // ---- Tabs ---------------------------------------------------------------------
@@ -53,17 +53,17 @@ addEventListener("hashchange", () => showTab(tabFromHash()));
 // ---- Watch the AI ---------------------------------------------------------------
 
 const aiView = new BoardView($("ai-board"));
-const mind = new MindPanel({ meta: $("mind-meta"), lede: $("mind-lede"), futures: $("futures"), why: $("why") });
+const mind = new MindPanel({ futures: $("futures"), verdict: $("verdict"), why: $("why"), whyTitle: $("why-title") });
 const explainer = new Explainer({
   figure: $("ex-figure"),
   caption: $("ex-caption"),
   steps: $("ex-steps"),
-  prev: $("ex-prev"),
-  next: $("ex-next"),
   play: $("ex-play"),
-  title: $("explainer-title"),
-  sub: $("explainer-sub"),
 });
+
+// "Inside the numbers" stays folded unless the reader opened it last time.
+$("inside").open = Boolean(saved.inside);
+$("inside").addEventListener("toggle", () => persist());
 
 const ai = new AiPlayer(aiView, {
   model: MODELS.some((m) => m.id === saved.model) ? saved.model : DEFAULT_MODEL,
@@ -71,10 +71,10 @@ const ai = new AiPlayer(aiView, {
   onDecision(decision) {
     if (!ai.game) return;
     if (!decision) {
-      if (!ai.game.over) mind.loading(modelInfo(ai.model));
+      if (!ai.game.over) mind.loading();
       return;
     }
-    mind.show(decision, modelInfo(ai.model), ai.game);
+    mind.show(decision, modelInfo(ai.model).lede);
     // Stepping one move at a time redraws the explanation for every move.
     explainer.offer(decision, { moveNumber: ai.game.moves + 1, force: ai.pace === "step" && ai.game.moves > 0 });
   },
@@ -104,7 +104,6 @@ function showAi() {
   $("ai-best").textContent = (2 ** Math.max(...game.board)).toLocaleString();
   $("ai-go").textContent = goLabel();
   $("ai-go").classList.toggle("is-running", ai.running);
-  $("go-hint").textContent = ai.pace === "step" ? "step" : ai.running ? "pause" : "play";
   for (const button of $("pace").children) {
     button.setAttribute("aria-checked", String(button.dataset.pace === ai.pace));
   }
@@ -157,7 +156,8 @@ $("model").append(
     button.type = "button";
     button.setAttribute("role", "radio");
     button.dataset.model = m.id;
-    button.textContent = m.label;
+    button.textContent = m.short;
+    button.title = m.label;
     return button;
   }),
 );

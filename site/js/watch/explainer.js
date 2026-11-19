@@ -7,7 +7,8 @@ import { ARROWS, NAMES, arrow, board, cellCentre, fmt, label, line, loop, note, 
 
 const W = 720;
 const H = 320;
-const PAN = 420; // width of drawing visible at once on a phone
+const MIN_VIEW = 400; // the narrowest slice of the drawing ever shown
+const SCALE = 1.15; // drawn a touch larger than its own units, room permitting
 const name = (dir) => `${ARROWS[dir]} ${NAMES[dir]}`;
 const pct = (p) => `${p >= 0.1 ? Math.round(p * 100) : (p * 100).toFixed(1)}%`;
 
@@ -17,7 +18,7 @@ const ROOT = { x: 14, y: 104, s: 120 };
 const AFTER = { x: 226, s: 58, ys: [14, 90, 166, 242] };
 
 function tryMoves(d, { valueStage, pickStage }) {
-  let out = note(ROOT.x, ROOT.y - 12, "the board now", { stage: 1 });
+  let out = note(ROOT.x, ROOT.y - 12, "the board now", { stage: 1, cls: "note board-label" });
   out += board(ROOT.x, ROOT.y, ROOT.s, d.board, { stage: 1 });
   d.futures.forEach((f, dir) => {
     const y = AFTER.ys[dir];
@@ -48,13 +49,9 @@ function tryMoves(d, { valueStage, pickStage }) {
 }
 
 function tryCaption(d) {
-  const legal = d.futures.filter(Boolean).length;
   const blocked = d.futures.map((f, dir) => (f ? null : NAMES[dir])).filter(Boolean);
-  const which =
-    legal === 4
-      ? "All four change the board."
-      : `${blocked.join(" and ")} ${blocked.length > 1 ? "don't" : "doesn't"} change anything, so ${blocked.length > 1 ? "they're" : "it's"} out.`;
-  return `First it tries all four moves on a copy of the board, before any new tile appears. ${which}`;
+  if (!blocked.length) return "It tries all four moves on a copy of the board.";
+  return `It tries every move on a copy of the board. ${blocked.join(" and ")} can't move.`;
 }
 
 // ---- Search + N-tuple ---------------------------------------------------------
@@ -118,12 +115,12 @@ function searchStory(d) {
     focus: [180, 420, 520, 540, 360],
     stages: [
       tryCaption(d),
-      `Then a new tile appears in a random empty cell, and it can't control where. So it imagines every case: a 2 (90%) or a 4 (10%) in each of the ${n} empty cells. That's ${n * 2} boards for ${NAMES[dir]} alone.`,
+      `A new tile then lands in a random empty cell. It can't choose where, so it imagines all ${n * 2} cases.`,
       deep
-        ? "The board is crowded, so it looks deeper: for each imagined board it plays its best reply, imagines every tile after that too, and asks the N-tuple network to score the results."
-        : "For each imagined board it plays its best reply and asks the N-tuple network how good the result is. Those are the scores on the right.",
-      `It averages the scores, counting each case by how likely it is. ${NAMES[dir]} comes to ${fmt(d.values[dir])}. It does the same for every other move.`,
-      `It plays the move with the best average, ${name(dir)}. All told it scored ${d.detail.searched.toLocaleString()} boards in ${Math.max(1, Math.round(d.ms))} ms.`,
+        ? "For each, it plays its best reply, imagines the tile after that too, and asks the N-tuple network to score the result."
+        : "For each, it plays its best reply and asks the N-tuple network to score the result.",
+      `It averages those scores, weighted by how likely each case is. ${NAMES[dir]} comes to ${fmt(d.values[dir])}.`,
+      `The best average wins: ${name(dir)}.`,
     ],
   };
 }
@@ -195,10 +192,9 @@ function ntupleAnimate(d) {
   };
 }
 
-function ntupleStory(d, episodes) {
+function ntupleStory(d) {
   const dir = d.action;
   const first = d.detail.features[dir][0].weight;
-  const value = d.values[dir] - d.detail.gained[dir];
   return {
     title: "How the N-tuple network decides",
     svg: ntupleBoard(d),
@@ -207,10 +203,10 @@ function ntupleStory(d, episodes) {
     durations: [3600, 4200, 4400, 3800, 4200],
     stages: [
       tryCaption(d),
-      `To score a board it looks through a window of 6 cells. The tiles it sees there are a key into a table learned over ${episodes.toLocaleString()}-odd games of self-play. This one returns ${signed(first)}.`,
-      "It does that 32 times: 4 window shapes, each laid over all 8 rotations and reflections of the board, and adds up everything it finds.",
-      `That sum, plus any points from merging, is the move's score: ${NAMES[dir]} gets ${d.detail.gained[dir].toLocaleString()} + ${fmt(value)} = ${fmt(d.values[dir])}. Same for the others.`,
-      `It plays the best-scoring move, ${name(dir)}. It never looks past this one move; the table has to know what's good.`,
+      `To score a board it reads 6 cells at a time and looks up a weight learned in self-play. This one: ${signed(first)}.`,
+      "It does that 32 times (4 shapes, each in 8 rotations and reflections) and adds them up.",
+      `Plus any points from merging. ${NAMES[dir]} comes to ${fmt(d.values[dir])}.`,
+      `The highest score wins: ${name(dir)}. It never looks further ahead.`,
     ],
   };
 }
@@ -234,8 +230,7 @@ function heuristicBoard(d) {
   const pts = SNAKE_PATH.map((c) => cellCentre(BIG.x, BIG.y, BIG.s, c));
   const d1 = pts.map((p, i) => `${i ? "L" : "M"}${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join("");
   out += `<path class="snake draw" data-stage="2" pathLength="1" d="${d1}"/>`;
-  out += note(BIG.x + BIG.s + 14, BIG.y + 18, "big tiles\nshould follow\nthe snake", { stage: 2, size: 14 });
-  out += note(BIG.x + BIG.s + 14, BIG.y + 84, `corner score\n${fmt(t.position)}`, { stage: 2, size: 13, cls: "note faint-text" });
+  out += note(BIG.x + BIG.s + 14, BIG.y + 24, `corner\n${fmt(t.position)}`, { stage: 2, size: 14 });
 
   // Empty cells and equal neighbours.
   after.forEach((v, i) => {
@@ -248,7 +243,7 @@ function heuristicBoard(d) {
       }
     }
   });
-  out += note(BIG.x + BIG.s + 14, BIG.y + 136, `${t.empty} empty\n${t.pairs} pair${t.pairs === 1 ? "" : "s"}\nbumpiness ${t.rough}`, { stage: 3, size: 13 });
+  out += note(BIG.x + BIG.s + 14, BIG.y + 84, `${t.empty} empty\n${t.pairs} pair${t.pairs === 1 ? "" : "s"}\n${t.rough} bumps`, { stage: 3, size: 14 });
 
   const formula = `2×${fmt(t.position)} + 1.5×${t.empty} + 0.5×${t.pairs} − 0.1×${t.rough}\n= ${fmt(d.values[dir])}`;
   out += note(BIG.x, BIG.y + BIG.s + 24, formula, { stage: 4, size: 14, cls: "note value" });
@@ -264,10 +259,10 @@ function heuristicStory(d) {
     focus: [180, 520, 520, 420, 400],
     stages: [
       tryCaption(d),
-      "Rule one: big tiles belong along a snake that starts in the top-left corner. A tile scores more the earlier it sits on the snake, which keeps the biggest one pinned in the corner.",
-      "Rules two to four: leave cells empty, keep equal tiles side by side so they can merge, and avoid bumps between very different neighbours.",
-      `Each rule has a weight a person picked by hand, and the four are added up. ${NAMES[dir]} scores ${fmt(d.values[dir])}.`,
-      `It plays whichever move scores highest, ${name(dir)}. Nothing here was learned.`,
+      "Rule one: big tiles should follow a snake from the top-left corner.",
+      "More rules: empty cells and equal neighbours are good, bumps between neighbours are bad.",
+      `Each rule is weighted by hand and they're added up. ${NAMES[dir]} scores ${fmt(d.values[dir])}.`,
+      `The highest score wins: ${name(dir)}. Nothing here was learned.`,
     ],
   };
 }
@@ -275,7 +270,7 @@ function heuristicStory(d) {
 // ---- Neural networks (DQN and PPO) ----------------------------------------------
 
 function netBoard(d) {
-  let out = note(ROOT.x, ROOT.y - 12, "the board now", { stage: 1 });
+  let out = note(ROOT.x, ROOT.y - 12, "the board now", { stage: 1, cls: "note board-label" });
   out += board(ROOT.x, ROOT.y, ROOT.s, d.board, { stage: 1 });
 
   // One-hot planes: one per tile value on the board, stacked like cards.
@@ -300,7 +295,7 @@ function netBoard(d) {
       g += `<text class="plane-tag" x="${x + PS + 3}" y="${y + 10}">${2 ** exp}s</text></g>`;
       out += g;
     });
-  out += note(px - 4, py + PS + 24, "one layer per tile value:\nis there a 2 here? a 4? …", { stage: 1, size: 13 });
+  out += note(px - 4, py + PS + 24, "16 on/off layers", { stage: 1, size: 13 });
 
   // Convolutions: 2×2 patches -> 3×3 -> 2×2.
   const patch = cellCentre(ROOT.x, ROOT.y, ROOT.s, 0);
@@ -318,8 +313,7 @@ function netBoard(d) {
   out += grid(340, 126, 3, 54);
   out += arrow(400, 153, 418, 153, { stage: 2, head: 5, bow: 0 });
   out += grid(424, 135, 2, 36);
-  out += note(340, 112, "2×2 filters,\ntwice", { stage: 2, size: 13 });
-  out += label(340, 200, "128 patterns\nper patch", { stage: 2, size: 11, cls: "label faint-text" });
+  out += note(340, 112, "2×2 filters", { stage: 2, size: 13 });
 
   // Dense layer: the real 256 hidden activations.
   const hidden = d.detail.hidden;
@@ -345,8 +339,7 @@ function netBoard(d) {
   });
   if (d.kind === "prob") out += label(OX, 228, `value head: ${fmt(d.detail.value)}`, { stage: 4, size: 12, cls: "label faint-text" });
   out += loop(OX + 32, 104 + d.action * 28 - 6, 44, 14, { stage: 5 });
-  out += note(W - 8, H - 30, `plays ${name(d.action)}`, { stage: 5, size: 18, anchor: "end", cls: "note accent-text" });
-  out += note(W - 8, H - 10, "without trying a single move", { stage: 5, size: 13, anchor: "end", cls: "note faint-text" });
+  out += note(W - 8, H - 24, `plays ${name(d.action)}`, { stage: 5, size: 18, anchor: "end", cls: "note accent-text" });
   return out;
 }
 
@@ -358,43 +351,35 @@ function netStory(d) {
     view: [64, 256],
     focus: [160, 380, 520, 600, 560],
     stages: [
-      "A network can't read numbers off tiles, only on/off signals. So the board becomes 16 layers, one per tile value, each marking where that tile sits.",
-      "Two layers of small filters slide over every 2×2 patch of tiles. Training taught them to fire on useful patterns, like two equal tiles side by side.",
-      "Those patterns are mixed into 256 numbers: the network's summary of the board. The squares above are the real values for this board.",
-      q
-        ? "A last layer turns the summary into one number per move: how much future merging it expects, on the log scale it was trained with."
-        : "A last layer turns the summary into a probability for each move, with moves that can't happen masked out. A second head estimates how well the game is going.",
-      `It plays the ${q ? "highest" : "most likely"} move, ${name(d.action)}. It never tried a move: everything it knows came from 30 minutes of practice.`,
+      "The board becomes 16 on/off layers, one for each tile value.",
+      "Small filters scan every 2×2 patch of tiles for patterns training found useful.",
+      "The patterns are mixed into 256 numbers: its summary of the board.",
+      q ? "One output per move: how much future merging it expects." : "One output per move: how likely it is to choose it.",
+      `The ${q ? "highest" : "likeliest"} wins: ${name(d.action)}. It never tried a move.`,
     ],
   };
 }
 
 // ---- The player ---------------------------------------------------------------------
 
-const STORIES = { search: searchStory, value: (d, e) => (d.detail.terms ? heuristicStory(d) : ntupleStory(d, e)), q: netStory, prob: netStory };
+const STORIES = { search: searchStory, value: (d) => (d.detail.terms ? heuristicStory(d) : ntupleStory(d)), q: netStory, prob: netStory };
 
 export class Explainer {
   #story = null;
   #stage = 0;
   #timer = 0;
   #latest = null;
-  #drawn = 0; // the move number the current drawing comes from
   #playing = !matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  constructor({ figure, caption, steps, prev, next, play, title, sub }) {
-    Object.assign(this, { figure, caption, steps, title, sub, playButton: play });
-    prev.addEventListener("click", () => this.#go(this.#stage - 1, true));
-    next.addEventListener("click", () => this.#go(this.#stage + 1, true));
+  constructor({ figure, caption, steps, play }) {
+    Object.assign(this, { figure, caption, steps, playButton: play });
     play.addEventListener("click", () => this.#setPlaying(!this.#playing));
     steps.addEventListener("click", (e) => {
-      const li = e.target.closest("[data-step]");
-      if (li) this.#go(Number(li.dataset.step), true);
+      const button = e.target.closest("[data-step]");
+      if (button) this.#go(Number(button.dataset.step), true);
     });
-    sub.addEventListener("click", (e) => {
-      if (e.target.closest(".ex-redraw")) this.redraw();
-    });
+    new ResizeObserver(() => this.#zoom()).observe(figure);
     this.#setPlaying(this.#playing);
-    this.episodes = 55000;
   }
 
   // A new decision arrives every move. Only the first one for a model is
@@ -403,18 +388,6 @@ export class Explainer {
   offer(decision, { moveNumber, force = false } = {}) {
     this.#latest = { decision, moveNumber };
     if (force || !this.#story) this.#draw();
-    else this.#showStale();
-  }
-
-  redraw() {
-    if (this.#latest) this.#draw();
-  }
-
-  #showStale() {
-    const stale = this.#latest.moveNumber !== this.#drawn;
-    this.sub.innerHTML = `Drawn with the real board and numbers from move ${this.#drawn.toLocaleString()}.${
-      stale ? ` <button type="button" class="link ex-redraw">Redraw with move ${this.#latest.moveNumber.toLocaleString()}</button>` : ""
-    }`;
   }
 
   clear(text) {
@@ -427,15 +400,15 @@ export class Explainer {
 
   #draw() {
     const { decision: d, moveNumber } = this.#latest;
-    this.#story = STORIES[d.kind](d, this.episodes);
-    this.title.textContent = this.#story.title;
-    this.#drawn = moveNumber;
-    this.#showStale();
+    this.#story = STORIES[d.kind](d);
     const [top, height] = this.#story.view ?? [0, H];
     this.figure.innerHTML = svg(W, height, this.#story.svg, { label: this.#story.title, top });
+    const tag = this.figure.querySelector(".board-label tspan");
+    if (tag) tag.textContent = `move ${moveNumber.toLocaleString()}`;
     this.steps.innerHTML = this.#story.stages
       .map((_, i) => `<li><button type="button" data-step="${i}" aria-label="Step ${i + 1}">${i + 1}</button></li>`)
       .join("");
+    this.#zoom();
     this.#go(0);
   }
 
@@ -443,8 +416,7 @@ export class Explainer {
     const n = this.#story?.stages.length ?? 0;
     if (!n) return;
     if (stage >= n) {
-      // Come round again with the newest board.
-      if (this.#latest && !manual) return this.#draw();
+      if (!manual) return this.#draw(); // come round again with the newest board
       stage = 0;
     }
     if (stage < 0) stage = n - 1;
@@ -453,11 +425,10 @@ export class Explainer {
     for (const el of svgEl.querySelectorAll("[data-stage]")) {
       const s = Number(el.dataset.stage) - 1;
       el.classList.toggle("on", s <= stage);
-      el.classList.toggle("now", s === stage);
     }
     this.#story.animate?.(svgEl, stage + 1);
-    this.#pan(svgEl, stage);
-    this.caption.innerHTML = `<span class="ex-num">${stage + 1}</span>${this.#story.stages[stage]}`;
+    this.#pan();
+    this.caption.textContent = this.#story.stages[stage];
     for (const b of this.steps.querySelectorAll("button")) {
       b.setAttribute("aria-current", String(Number(b.dataset.step) === stage));
     }
@@ -465,18 +436,31 @@ export class Explainer {
     this.#schedule();
   }
 
-  // On narrow screens the drawing is shown larger than the screen and the
-  // view pans to the part each step is about, like a camera.
-  #pan(svgEl, stage) {
-    const centre = this.#story.focus?.[stage] ?? W / 2;
-    const shift = Math.min(Math.max(centre - PAN / 2, 0), W - PAN);
+  // The drawing is 720 units wide but always shown at full size or close to
+  // it: when the space is narrower, a camera pans to the part each step is
+  // about instead of shrinking everything.
+  #visible() {
+    return Math.min(W, Math.max(MIN_VIEW, this.figure.clientWidth / SCALE));
+  }
+
+  #zoom() {
+    this.figure.style.setProperty("--zoom", (W / this.#visible()).toFixed(4));
+    this.#pan();
+  }
+
+  #pan() {
+    const svgEl = this.figure.querySelector("svg");
+    if (!svgEl || !this.#story) return;
+    const view = this.#visible();
+    const centre = this.#story.focus?.[this.#stage] ?? W / 2;
+    const shift = Math.min(Math.max(centre - view / 2, 0), W - view);
     svgEl.style.setProperty("--pan", `${((-shift / W) * 100).toFixed(2)}%`);
   }
 
   #schedule() {
     clearTimeout(this.#timer);
     if (!this.#playing || !this.#story) return;
-    const ms = this.#story.durations?.[this.#stage] ?? (this.#stage === this.#story.stages.length - 1 ? 5200 : 4200);
+    const ms = this.#story.durations?.[this.#stage] ?? (this.#stage === this.#story.stages.length - 1 ? 4200 : 3600);
     this.#timer = setTimeout(() => this.#go(this.#stage + 1), ms);
   }
 

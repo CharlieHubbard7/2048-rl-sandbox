@@ -19,13 +19,14 @@ The page opens on **Watch the AI**:
 - **One move / Slow / Fast.** Step through a game a move at a time (Space works
   too), or let it play. Before every move the model's reasoning appears first, then
   the move happens.
-- **What it's thinking** shows the four boards each move would produce, the score
-  the model gave each one on a number line, and a look inside the score: the
+- **What it's thinking** shows the four boards each move would produce, what the
+  model scored each one, and a one-line verdict.
+- **How it decides** is a hand-drawn storyboard of the algorithm, drawn with the
+  real board and the real numbers from the current move.
+- **Inside the numbers**, folded away until opened, breaks one score down: the
   heuristic's four weighted rules, the N-tuple network's 32 table lookups, the
   search's map of where the next tile could land, or the networks' attention and
   hidden activations.
-- **How it decides** is a hand-drawn storyboard of the algorithm, drawn with the
-  real board and the real numbers from the current move.
 
 **Play yourself** is the classic game: slide, merge equal tiles once per move, a 2
 (90%) or 4 (10%) appears in a random empty cell, and reaching 2048 lets you keep

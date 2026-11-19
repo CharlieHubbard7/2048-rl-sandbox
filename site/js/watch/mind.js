@@ -1,5 +1,5 @@
-// "What it's thinking": the four moves the model compared, where each one
-// landed on a number line, and a look inside the score of one of them.
+// "What it's thinking": the four moves the model compared, a one-line
+// verdict, and (folded away until asked for) a look inside one score.
 import { ARROWS, NAMES, esc, fmt, signed } from "./draw.js";
 
 const html = (strings, ...values) => strings.reduce((out, s, i) => out + values[i - 1] + s).trim();
@@ -22,8 +22,8 @@ export class MindPanel {
   #pinned = null; // a move the reader clicked, kept until the next decision
   #hover = null;
 
-  constructor({ meta, lede, futures, why }) {
-    Object.assign(this, { meta, lede, futures, why });
+  constructor({ futures, verdict, why, whyTitle }) {
+    Object.assign(this, { futures, verdict, why, whyTitle });
     futures.addEventListener("pointerover", (e) => this.#preview(e.target.closest("[data-dir]")));
     futures.addEventListener("focusin", (e) => this.#preview(e.target.closest("[data-dir]")));
     futures.addEventListener("pointerleave", () => this.#preview(null));
@@ -50,10 +50,9 @@ export class MindPanel {
     this.#markSelected();
   }
 
-  loading(model) {
+  loading() {
     this.#decision = null;
-    this.lede.textContent = model.lede;
-    this.meta.textContent = "Thinking…";
+    this.verdict.textContent = "Thinking…";
     this.futures.classList.add("is-waiting");
     this.why.classList.add("is-waiting");
   }
@@ -62,13 +61,13 @@ export class MindPanel {
     this.futures.classList.add("is-played");
   }
 
-  show(decision, model, game) {
+  show(decision, lede) {
     this.#decision = decision;
+    this.lede = lede;
     this.#pinned = null;
     this.futures.classList.remove("is-waiting", "is-played");
     this.why.classList.remove("is-waiting");
-    this.lede.textContent = model.lede;
-    this.#renderMeta(game);
+    this.verdict.innerHTML = verdict(decision);
     this.#renderFutures();
     this.#renderWhy();
   }
@@ -77,21 +76,14 @@ export class MindPanel {
     this.#decision = null;
     this.futures.classList.remove("is-waiting", "is-played");
     this.why.classList.remove("is-waiting");
-    this.meta.textContent = `Game over after ${game.moves.toLocaleString()} moves`;
-    this.futures.innerHTML = `<p class="mind-empty">No move changes the board any more, so the game is over.</p>`;
+    this.verdict.textContent = `No move changes the board any more. Game over after ${game.moves.toLocaleString()} moves.`;
+    this.futures.innerHTML = "";
     this.why.innerHTML = "";
-  }
-
-  #renderMeta(game) {
-    const d = this.#decision;
-    const bits = [`Move ${(game.moves + 1).toLocaleString()}`, `${d.ms < 1 ? "<1" : Math.round(d.ms)} ms`];
-    if (d.kind === "search") bits.push(`${d.detail.searched.toLocaleString()} boards scored`);
-    this.meta.textContent = bits.join(" · ");
+    this.whyTitle.textContent = "Inside the numbers";
   }
 
   #renderFutures() {
     const d = this.#decision;
-    const legal = d.values.filter((v) => v !== null);
     const best = d.values[d.action];
     const cards = d.futures
       .map((f, dir) => {
@@ -103,7 +95,7 @@ export class MindPanel {
         }
         const v = d.values[dir];
         const chosen = dir === d.action;
-        let gap = chosen ? (d.kind === "prob" ? "its pick" : "best") : signed(v - best, d.kind);
+        let gap = chosen ? "picks" : signed(v - best, d.kind);
         if (d.kind === "prob" && !chosen) gap = "&nbsp;";
         return html`<button type="button" class="future${chosen ? " is-chosen" : ""}" data-dir="${dir}" aria-pressed="false">
           <span class="future-name">${name(dir)}</span>
@@ -113,7 +105,7 @@ export class MindPanel {
         </button>`;
       })
       .join("");
-    this.futures.innerHTML = `<div class="future-row">${cards}</div>${numberLine(d.values, d.action, d.kind, legal)}`;
+    this.futures.innerHTML = cards;
     this.#markSelected();
   }
 
@@ -130,49 +122,27 @@ export class MindPanel {
     const d = this.#decision;
     if (!d) return;
     const dir = this.selected;
-    const render = WHY[d.kind];
-    this.why.innerHTML = render ? render(d, dir) : "";
+    const net = d.kind === "q" || d.kind === "prob";
+    this.whyTitle.textContent = net ? "Inside the network" : `Inside the score for ${name(dir)}`;
+    this.why.innerHTML = `<p class="why-lede">${this.lede}</p>${WHY[d.kind](d, dir)}`;
     if (d.kind === "value") wireLookups(this.why);
   }
 }
 
-// ---- The number line under the cards ---------------------------------------
-
-function numberLine(values, action, kind, legal) {
-  const W = 400;
-  const left = 22;
-  const right = W - 22;
-  let lo = kind === "prob" ? 0 : Math.min(...legal);
-  let hi = kind === "prob" ? 1 : Math.max(...legal);
-  if (hi === lo) {
-    lo -= 1;
-    hi += 1;
+// One sentence: what it picked and by how much.
+function verdict(d) {
+  const legal = d.values.map((v, dir) => ({ v, dir })).filter(({ v }) => v !== null);
+  const pick = `<strong>${name(d.action)}</strong>`;
+  if (legal.length === 1) return `Only ${pick} can move.`;
+  if (d.kind === "prob") return `Picks ${pick}, ${fmt(d.values[d.action], "prob")} sure, without trying a move.`;
+  const rival = legal.filter(({ dir }) => dir !== d.action).sort((a, b) => b.v - a.v)[0];
+  const margin = `${fmt(d.values[d.action] - rival.v, d.kind)} ahead of ${name(rival.dir)}`;
+  if (d.kind === "q") return `Picks ${pick}, ${margin}, without trying a move.`;
+  if (d.kind === "search") {
+    const ms = d.ms < 1 ? "under a millisecond" : `${Math.round(d.ms)} ms`;
+    return `Picks ${pick}, ${margin}. Scored ${d.detail.searched.toLocaleString()} boards in ${ms}.`;
   }
-  const x = (v) => left + ((v - lo) / (hi - lo)) * (right - left);
-  const points = values
-    .map((v, dir) => (v === null ? null : { dir, v, x: x(v) }))
-    .filter(Boolean)
-    .sort((a, b) => a.x - b.x);
-  // Stack labels that would collide.
-  let lastX = -Infinity;
-  let level = 0;
-  for (const p of points) {
-    level = p.x - lastX < 20 ? level + 1 : 0;
-    p.level = level;
-    lastX = p.x;
-  }
-  const dots = points
-    .map(({ dir, x: px, level: lv }) => {
-      const cls = dir === action ? "nl-dot is-chosen" : "nl-dot";
-      const ly = 22 - lv * 13;
-      return `<g class="${cls}"><line x1="${px}" y1="${ly + 3}" x2="${px}" y2="33" class="nl-stem"/><circle cx="${px}" cy="36" r="4"/><text x="${px}" y="${ly}" text-anchor="middle">${ARROWS[dir]}</text></g>`;
-    })
-    .join("");
-  const ends =
-    kind === "prob"
-      ? `<text class="nl-end" x="${left}" y="56" text-anchor="middle">0%</text><text class="nl-end" x="${right}" y="56" text-anchor="middle">100%</text>`
-      : `<text class="nl-end" x="${left}" y="56" text-anchor="start">worse</text><text class="nl-end" x="${right}" y="56" text-anchor="end">better</text>`;
-  return `<svg class="number-line" viewBox="0 0 ${W} 62" aria-hidden="true"><path class="nl-axis" d="M${left - 8} 36.5Q${W / 2} 35 ${right + 8} 36.8"/>${dots}${ends}</svg>`;
+  return `Picks ${pick}, ${margin}.`;
 }
 
 // ---- Inside the score, per kind of model -------------------------------------
@@ -187,10 +157,10 @@ const WHY = {
 };
 
 const TERMS = [
-  ["position", "Corner gradient", "big tiles laid along a snake from the top-left corner"],
-  ["empty", "Empty cells", "room left to manoeuvre"],
-  ["pairs", "Mergeable pairs", "neighbours holding the same tile"],
-  ["rough", "Bumpiness", "how much neighbouring tiles differ"],
+  ["position", "Corner gradient", "Big tiles laid along a snake from the top-left corner"],
+  ["empty", "Empty cells", "Room left to manoeuvre"],
+  ["pairs", "Mergeable pairs", "Neighbours holding the same tile"],
+  ["rough", "Bumpiness", "How much neighbouring tiles differ"],
 ];
 
 function heuristicWhy(d, dir) {
@@ -203,7 +173,7 @@ function heuristicWhy(d, dir) {
     const width = (Math.abs(parts[i]) / maxAbs) * 50;
     const bar = parts[i] >= 0 ? `left:50%;width:${width}%` : `left:${50 - width}%;width:${width}%`;
     return html`<tr>
-      <th scope="row">${label}<small>${gloss}</small></th>
+      <th scope="row" title="${gloss}">${label}</th>
       <td class="num">${w < 0 ? "−" : ""}${Math.abs(w)} ×</td>
       <td class="num">${fmt(t[key])}</td>
       <td class="num strong">${signed(parts[i])}</td>
@@ -224,13 +194,12 @@ function heuristicWhy(d, dir) {
     versus = `<p class="why-versus">${total >= 0 ? "Beats" : "Loses to"} ${name(rival)} by ${fmt(Math.abs(total))}, mostly on <strong>${top.label.toLowerCase()}</strong> (${signed(top.diff)}).</p>`;
   }
 
-  return html`<h3 class="why-title">Inside the score for ${name(dir)}</h3>
-    <table class="terms">
+  return html`<table class="terms">
       <tbody>${rows}</tbody>
       <tfoot><tr><th scope="row">Score</th><td></td><td></td><td class="num strong">${fmt(d.values[dir])}</td><td></td></tr></tfoot>
     </table>
     ${versus}
-    <p class="why-note">Tiles are counted by their power of two, so a 64 counts as 6.</p>`;
+    <p class="why-note">Four hand-picked rules, weighted and added. Tiles count by their power of two: a 64 is 6.</p>`;
 }
 
 function rivalOf(d, dir) {
@@ -265,13 +234,12 @@ function ntupleWhy(d, dir) {
         .join(""),
     )
     .join("");
-  return html`<h3 class="why-title">Inside the score for ${name(dir)}</h3>
-    <p class="why-sum"><span>${gained.toLocaleString()}</span> points from merging <span class="op">+</span> <span>${fmt(total)}</span> board value <span class="op">=</span> <strong>${fmt(d.values[dir])}</strong></p>
+  return html`<p class="why-sum"><span>${gained.toLocaleString()}</span> from merging <span class="op">+</span> <span>${fmt(total)}</span> board value <span class="op">=</span> <strong>${fmt(d.values[dir])}</strong></p>
     <div class="lookups">
-      <div class="lookup-board">${miniBoard(after, { cls: "mini-lg" })}<p class="lookup-readout" data-default="Hover a shape to see where it looked.">Hover a shape to see where it looked.</p></div>
+      <div class="lookup-board">${miniBoard(after, { cls: "mini-lg" })}<p class="lookup-readout" data-default="Hover a shape to see what it read.">Hover a shape to see what it read.</p></div>
       <div>
         <div class="waffle">${glyphs}</div>
-        <p class="why-note">The board value is 32 lookups added up: 4 shapes of 6 cells, each read in all 8 rotations and reflections of the board. Each lookup returns a weight learned in self-play. <span class="key pos"></span> liked what it saw, <span class="key neg"></span> didn't; darker is stronger.</p>
+        <p class="why-note">32 lookups in learned tables: 4 six-cell shapes, each read in 8 rotations and reflections. <span class="key pos"></span> liked what it saw, <span class="key neg"></span> didn't.</p>
       </div>
     </div>`;
 }
@@ -310,7 +278,7 @@ function searchWhy(d, dir) {
   const maxAbs = Math.max(...rows.map((r) => Math.abs(r.two - mean)), 1e-9);
   const worst = rows.reduce((a, b) => (b.two < a.two ? b : a));
   const bestRow = rows.reduce((a, b) => (b.two > a.two ? b : a));
-  const where = (cell) => `row ${Math.floor(cell / 4) + 1}, column ${(cell % 4) + 1}`;
+  const where = (cell) => `row ${Math.floor(cell / 4) + 1}, column ${(cell % 4) + 1} (${signed(byCell.get(cell).two - mean)})`;
   const empty = (i) => {
     const r = byCell.get(i);
     const delta = r.two - mean;
@@ -320,20 +288,13 @@ function searchWhy(d, dir) {
     const title = `A 2 here: ${signed(delta)}. A 4 here: ${signed(r.four - mean)}.`;
     return `<span class="spawn ${tone}" style="--a:${a}" title="${title}">${tag}<span class="spawn-two">${signed(delta)}</span></span>`;
   };
-  const plies = d.detail.plies;
-  const depth =
-    plies > 1
-      ? "The board is crowded, so it looks two moves deep here: for every new tile, its best reply, then every tile after that."
-      : "For every new tile it finds its best reply and scores the result with the N-tuple network.";
-  return html`<h3 class="why-title">Inside the score for ${name(dir)}</h3>
-    <p class="why-sum"><span>${gained.toLocaleString()}</span> points from merging <span class="op">+</span> average over <span>${rows.length * 2}</span> possible new tiles <span class="op">=</span> <strong>${fmt(d.values[dir])}</strong></p>
+  const deep = d.detail.plies > 1 ? " Crowded board, so it looked two moves deep." : "";
+  return html`<p class="why-sum"><span>${gained.toLocaleString()}</span> from merging <span class="op">+</span> average over <span>${rows.length * 2}</span> possible new tiles <span class="op">=</span> <strong>${fmt(d.values[dir])}</strong></p>
     <div class="spawnmap">
       ${miniBoard(after, { cls: "mini-lg mini-spawn", empty })}
       <div class="spawn-notes">
-        <p>It can't choose where the next tile lands, so it plans for all of them: a 2 (90% likely) or a 4 (10%) in each empty cell.</p>
-        <p>Each empty cell shows how the game looks if a 2 lands there, compared with the average of ${fmt(mean)}. <span class="key neg"></span> worse, <span class="key pos"></span> better.</p>
-        ${rows.length > 1 ? `<p>Worst case: a 2 in ${where(worst.cell)} (${signed(worst.two - mean)}). Best: ${where(bestRow.cell)} (${signed(bestRow.two - mean)}).</p>` : ""}
-        <p class="why-note">${depth}</p>
+        <p>It can't choose where the next tile lands, so it plans for every cell. Each shows how the outlook moves if a 2 lands there: <span class="key neg"></span> worse, <span class="key pos"></span> better.</p>
+        ${rows.length > 1 ? `<p class="why-note">Worst: ${where(worst.cell)}. Best: ${where(bestRow.cell)}.${deep}</p>` : ""}
       </div>
     </div>`;
 }
@@ -350,17 +311,16 @@ function netWhy(d) {
     .join("");
   const value =
     d.kind === "prob"
-      ? `<p class="why-versus">Its value head rates the position at <strong>${fmt(d.detail.value)}</strong>: how much future merging it expects from here, on its log scale.</p>`
+      ? `<p class="why-note">Its value head rates the position ${fmt(d.detail.value)} (future merging, log scale).</p>`
       : "";
-  return html`<h3 class="why-title">Inside the network</h3>
-    <div class="net-why">
+  return html`<div class="net-why">
       <figure>
         ${miniBoard(d.board, { cls: "mini-lg mini-heat", attrs })}
-        <figcaption>Tiles that mattered: how much its rating of ${name(d.action)} moves when each tile is taken away.</figcaption>
+        <figcaption>Tiles that mattered: remove one and the rating of ${name(d.action)} shifts this much.</figcaption>
       </figure>
       <figure>
         <svg class="activations" viewBox="0 0 95 95" aria-hidden="true">${cells}</svg>
-        <figcaption>The 256 numbers its layers boil this board down to. ${active} are switched on.</figcaption>
+        <figcaption>Its 256-number summary of the board. ${active} are on.</figcaption>
       </figure>
     </div>
     ${value}`;
