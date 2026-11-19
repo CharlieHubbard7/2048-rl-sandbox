@@ -35,3 +35,31 @@ test("search values match the python expectimax", () => {
     });
   }
 });
+
+test("the search explains itself without changing its answer", () => {
+  const search = expectimaxAgent(net);
+  for (const c of cases) {
+    const board = Uint8Array.from(c.board);
+    const plain = search.decide(board);
+    const { values, action, detail } = search.decide(board, { detail: true });
+    assert.deepEqual(values, plain.values);
+    assert.equal(action, plain.action);
+    values.forEach((v, dir) => {
+      if (v === null) return assert.equal(detail.outcomes[dir], null);
+      // Every empty cell of the afterstate appears once, with both tiles.
+      const empty = move(board, dir).after.filter((x) => x === 0).length;
+      assert.equal(detail.outcomes[dir].length, empty);
+    });
+    assert.ok(detail.searched > 0);
+  }
+});
+
+test("the 32 lookups add up to the board value", () => {
+  for (const c of cases) {
+    const after = move(Uint8Array.from(c.board), 0).after;
+    const features = net.features(after);
+    assert.equal(features.length, 32);
+    const total = features.reduce((s, f) => s + f.weight, 0);
+    assert.ok(Math.abs(total - net.value(after)) < 1e-6);
+  }
+});

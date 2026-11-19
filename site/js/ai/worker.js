@@ -3,6 +3,7 @@
 import { loadBundle } from "./bundle.js";
 import { expectimaxAgent } from "./expectimax.js";
 import { heuristicAgent } from "./heuristic.js";
+import { DIRECTIONS, move } from "../engine.js";
 import { dqnAgent, ppoAgent } from "./nets.js";
 import { NTupleNetwork, ntupleAgent } from "./ntuple.js";
 
@@ -35,11 +36,19 @@ function load(model) {
   return agents.get(model);
 }
 
-self.addEventListener("message", async ({ data: { id, model, board, explain } }) => {
+self.addEventListener("message", async ({ data: { id, model, board, explain, detail } }) => {
   try {
     const agent = await load(model);
-    const decision = agent.decide(Uint8Array.from(board), { explain });
-    self.postMessage({ id, decision: { ...decision, kind: agent.kind } });
+    const started = performance.now();
+    const cells = Uint8Array.from(board);
+    const decision = agent.decide(cells, { explain, detail });
+    const ms = performance.now() - started;
+    // The four boards the model compared: what each move does before a tile spawns.
+    const futures = DIRECTIONS.map((dir) => {
+      const { after, gained, moved } = move(cells, dir);
+      return moved ? { after: Array.from(after), gained } : null;
+    });
+    self.postMessage({ id, decision: { ...decision, kind: agent.kind, model, board, futures, ms } });
   } catch (error) {
     agents.delete(model); // let the next request retry a failed download
     self.postMessage({ id, error: String(error) });

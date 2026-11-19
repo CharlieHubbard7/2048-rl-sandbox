@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
 
-import { heuristicAgent, evaluate } from "../../site/js/ai/heuristic.js";
+import { WEIGHTS, heuristicAgent, evaluate } from "../../site/js/ai/heuristic.js";
 import { DIRECTIONS, move } from "../../site/js/engine.js";
 
 const cases = JSON.parse(readFileSync(new URL("./fixtures/engine.json", import.meta.url)));
@@ -21,4 +21,17 @@ test("only legal moves get a value", () => {
   const { action, values } = heuristicAgent.decide(board);
   assert.equal(values[0], null);
   assert.notEqual(action, 0);
+});
+
+test("the weighted terms add up to the evaluation", () => {
+  for (const c of cases) {
+    const board = Uint8Array.from(c.board);
+    const { values, detail } = heuristicAgent.decide(board, { detail: true });
+    values.forEach((v, dir) => {
+      if (v === null) return;
+      const t = detail.terms[dir];
+      const sum = Object.entries(WEIGHTS).reduce((s, [k, w]) => s + w * t[k], 0);
+      assert.ok(Math.abs(sum - v) < 1e-9);
+    });
+  }
 });

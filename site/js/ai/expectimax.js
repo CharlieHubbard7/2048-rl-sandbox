@@ -8,9 +8,14 @@ const SPAWNS = [
 ];
 
 export function expectimaxAgent(net, { depth = 1, deepBelowEmpty = 4 } = {}) {
+  let leaves = 0; // boards scored by the network, for the explanation
+
   // Average value of an afterstate over every tile that could spawn on it.
   function chance(after, plies) {
-    if (plies === 0) return net.value(after);
+    if (plies === 0) {
+      leaves++;
+      return net.value(after);
+    }
     let total = 0;
     let empty = 0;
     for (let cell = 0; cell < 16; cell++) {
@@ -35,26 +40,64 @@ export function expectimaxAgent(net, { depth = 1, deepBelowEmpty = 4 } = {}) {
     return top === -Infinity ? 0 : top;
   }
 
+  // The same average as chance(), unrolled one level so the explanation can
+  // show what each possible new tile would be worth on its own.
+  function outcomes(after, plies) {
+    const rows = [];
+    for (let cell = 0; cell < 16; cell++) {
+      if (after[cell]) continue;
+      const row = { cell };
+      for (const [exp] of SPAWNS) {
+        after[cell] = exp;
+        row[exp === 1 ? "two" : "four"] = best(after, plies - 1);
+      }
+      after[cell] = 0;
+      rows.push(row);
+    }
+    return rows;
+  }
+
+  // Averages outcome rows exactly as chance() does, in the same order.
+  const average = (rows) => {
+    let total = 0;
+    for (const { two, four } of rows) {
+      total += 0.9 * two;
+      total += 0.1 * four;
+    }
+    return total / rows.length;
+  };
+
   return {
     kind: "search",
-    decide(board) {
+    decide(board, { detail = false } = {}) {
       // Crowded boards are the most dangerous and the cheapest to search
       // (few empty cells), so that is where the extra ply goes.
       const empty = board.reduce((n, v) => n + (v === 0), 0);
       const plies = depth + (empty < deepBelowEmpty ? 1 : 0);
       const values = [null, null, null, null];
+      const rows = [null, null, null, null];
+      const gains = [0, 0, 0, 0];
       let action = -1;
       let bestAfter = null;
+      leaves = 0;
       for (const dir of DIRECTIONS) {
         const { after, gained, moved } = move(board, dir);
+        gains[dir] = gained;
         if (!moved) continue;
-        values[dir] = gained + chance(after, plies);
+        if (detail) {
+          rows[dir] = outcomes(after, plies);
+          values[dir] = gained + average(rows[dir]);
+        } else {
+          values[dir] = gained + chance(after, plies);
+        }
         if (action < 0 || values[dir] > values[action]) {
           action = dir;
           bestAfter = after;
         }
       }
-      return { action, values, heat: bestAfter && net.heat(bestAfter) };
+      const decision = { action, values, heat: bestAfter && net.heat(bestAfter) };
+      if (detail) decision.detail = { plies, searched: leaves, gained: gains, outcomes: rows };
+      return decision;
     },
   };
 }

@@ -1,0 +1,1076 @@
+/* Watch the AI: the board and its controls, the thinking panel, and the
+   hand-drawn explainer. Builds on the tokens in style.css. */
+
+:root {
+  --hand: "Shantell Sans", "Segoe Print", "Bradley Hand", cursive;
+  --blue: #4b73b5;
+  --soft: #f6f8fb;
+}
+
+.watch {
+  display: grid;
+  grid-template-columns: var(--board) minmax(0, 1fr);
+  align-items: start;
+  gap: 40px 56px;
+  max-width: calc(var(--content) + 32px);
+  margin: 0 auto;
+  padding: 32px 16px 96px;
+}
+
+.watch[hidden] {
+  display: none;
+}
+
+kbd {
+  padding: 1px 6px;
+  border: 1px solid var(--line);
+  border-bottom-width: 2px;
+  border-radius: 5px;
+  background: var(--well);
+  font: 600 12px/1.4 var(--font);
+}
+
+/* ---- The board and its controls ------------------------------------------ */
+
+.stage {
+  width: var(--board);
+}
+
+.model-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.model-picker button {
+  padding: 6px 11px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: none;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.model-picker button:hover {
+  border-color: #b9c3d1;
+  color: var(--ink);
+}
+
+.model-picker button[aria-checked="true"] {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: #fff;
+}
+
+.model-blurb {
+  min-height: 4.5em;
+  margin: 14px 0 18px;
+  color: #45516a;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.stat {
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: var(--well);
+}
+
+.stat span {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.stat strong {
+  font-size: 19px;
+  font-weight: 700;
+}
+
+.transport {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.pace {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: 9px;
+  background: #e1e6ee;
+}
+
+.pace button {
+  padding: 6px 12px;
+  border: 0;
+  border-radius: 7px;
+  background: none;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.pace button:hover {
+  color: var(--ink);
+}
+
+.pace button[aria-checked="true"] {
+  background: var(--well);
+  color: var(--ink);
+  box-shadow: 0 1px 2px rgb(29 39 56 / 10%);
+}
+
+#ai-go {
+  min-width: 120px;
+}
+
+#ai-go.is-running {
+  border-color: var(--line);
+  background: var(--well);
+  color: var(--ink);
+}
+
+.transport-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+  font-size: 14px;
+}
+
+@media (pointer: coarse) {
+  .transport-foot .caption {
+    visibility: hidden;
+  }
+}
+
+/* ---- What it's thinking ---------------------------------------------------- */
+
+.mind {
+  min-width: 0;
+}
+
+.mind-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+}
+
+.mind-head h2,
+.explainer-head h2 {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+
+.mind-meta {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.mind-lede {
+  margin: 6px 0 18px;
+  color: #45516a;
+  font-size: 15px;
+}
+
+.futures,
+.why {
+  transition: opacity 160ms ease;
+}
+
+.futures.is-waiting,
+.why.is-waiting {
+  opacity: 0.45;
+}
+
+.future-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.future {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+  padding: 10px 10px 9px;
+  border: 1.5px solid transparent;
+  border-radius: 12px;
+  background: var(--well);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 140ms ease, box-shadow 140ms ease;
+}
+
+.future:hover,
+.future.is-selected {
+  box-shadow: 0 1px 2px rgb(29 39 56 / 6%), 0 6px 18px rgb(29 39 56 / 7%);
+}
+
+.future.is-chosen {
+  border-color: var(--accent);
+}
+
+.future[aria-pressed="true"]:not(.is-chosen) {
+  border-color: var(--ink);
+}
+
+.future-name {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.future-value {
+  font-size: 17px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+.future-gap {
+  margin-top: -6px;
+  color: var(--muted);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.future.is-chosen .future-gap {
+  color: var(--accent);
+  font-family: var(--hand);
+  font-weight: 600;
+}
+
+.future.is-blocked {
+  border: 1.5px dashed var(--line);
+  background: none;
+  cursor: default;
+}
+
+.future-none {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  color: #a3adbd;
+  font-family: var(--hand);
+  font-size: 14px;
+}
+
+/* Once the move is played, the chosen card says so. */
+.futures.is-played .future.is-chosen {
+  background: #fdf4f1;
+}
+
+.mind-empty {
+  margin: 0;
+  padding: 24px;
+  border-radius: 12px;
+  background: var(--well);
+  color: var(--muted);
+}
+
+/* Mini boards, as HTML, reusing the real tile faces. */
+.mini {
+  container-type: inline-size;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4%;
+  padding: 4%;
+  border-radius: 8px;
+  background: var(--cell-bg);
+  aspect-ratio: 1;
+}
+
+.mini-cell {
+  position: relative;
+  display: grid;
+  border-radius: 12%;
+  background: #fff;
+  aspect-ratio: 1;
+}
+
+.future .mini-cell.is-empty {
+  background: #f8f9fb;
+}
+
+.mini .tile-face {
+  border-radius: 12%;
+  font-size: 9.5cqi;
+  letter-spacing: -0.04em;
+}
+
+.mini .tile-face[data-digits="3"] { font-size: 7.6cqi; }
+.mini .tile-face[data-digits="4"] { font-size: 6cqi; }
+.mini .tile-face[data-digits="5"] { font-size: 4.8cqi; }
+
+.mini-lg {
+  width: 200px;
+  flex: none;
+}
+
+/* The number line: where each move landed, worst to best. */
+.number-line {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-top: 6px;
+  overflow: visible;
+}
+
+.nl-axis {
+  fill: none;
+  stroke: #b9c3d1;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+}
+
+.nl-dot circle {
+  fill: var(--muted);
+}
+
+.nl-dot text {
+  fill: var(--muted);
+  font: 600 13px var(--font);
+}
+
+.nl-stem {
+  stroke: #d5dce6;
+  stroke-width: 1;
+}
+
+.nl-dot.is-chosen circle {
+  fill: var(--accent);
+}
+
+.nl-dot.is-chosen text {
+  fill: var(--accent);
+}
+
+.nl-end {
+  fill: #a3adbd;
+  font: 13px var(--hand);
+}
+
+/* ---- Inside the score -------------------------------------------------------- */
+
+.why {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+
+.why-title {
+  margin: 0 0 12px;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.why-sum {
+  margin: 0 0 16px;
+  color: #45516a;
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}
+
+.why-sum span:not(.op) {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.why-sum .op {
+  margin: 0 2px;
+  color: var(--muted);
+}
+
+.why-sum strong {
+  color: var(--accent);
+}
+
+.why-note {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.why-versus {
+  margin: 14px 0 0;
+  color: #45516a;
+  font-size: 15px;
+}
+
+.why-versus strong {
+  color: var(--ink);
+}
+
+/* Heuristic: four weighted rules. */
+.terms {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.terms th,
+.terms td {
+  padding: 7px 0;
+  border-bottom: 1px solid #e3e8ef;
+  vertical-align: middle;
+}
+
+.terms th {
+  font-weight: 600;
+  text-align: left;
+}
+
+.terms th small {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.terms .num {
+  padding-left: 12px;
+  color: var(--muted);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.terms .strong {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.terms tfoot th,
+.terms tfoot td {
+  border-bottom: 0;
+}
+
+.terms tfoot .strong {
+  color: var(--accent);
+}
+
+.term-bar {
+  position: relative;
+  width: 26%;
+  padding-left: 16px !important;
+}
+
+.term-bar::before {
+  content: "";
+  position: absolute;
+  left: calc(16px + (100% - 16px) / 2);
+  top: 6px;
+  bottom: 6px;
+  width: 1px;
+  background: #c9d1dc;
+}
+
+.term-bar span {
+  position: relative;
+  display: block;
+  height: 8px;
+  border-radius: 3px;
+  margin-left: 0;
+}
+
+.term-bar .pos {
+  background: var(--blue);
+}
+
+.term-bar .neg {
+  background: var(--accent);
+}
+
+/* N-tuple: 32 lookups. */
+.lookups {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+.lookup-board .mini-lg {
+  width: 180px;
+}
+
+.mini-cell.is-read {
+  outline: 2.5px solid var(--accent);
+  outline-offset: 1px;
+  z-index: 1;
+}
+
+.lookup-readout {
+  width: 180px;
+  min-height: 3em;
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.lookup-readout strong {
+  font-weight: 700;
+}
+
+.mono {
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.pos-text {
+  color: var(--blue);
+}
+
+.neg-text {
+  color: var(--accent);
+}
+
+.waffle {
+  display: grid;
+  grid-template-columns: repeat(8, 30px);
+  gap: 5px;
+}
+
+.glyph {
+  width: 30px;
+  height: 30px;
+  padding: 3px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: var(--well);
+  cursor: pointer;
+}
+
+.glyph:hover,
+.glyph.is-on {
+  border-color: var(--ink);
+}
+
+.glyph svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.glyph .off {
+  fill: #eef1f5;
+}
+
+.glyph .pos {
+  fill: var(--blue);
+}
+
+.glyph .neg {
+  fill: var(--accent);
+}
+
+.key {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  vertical-align: -1px;
+}
+
+.key.pos {
+  background: var(--blue);
+}
+
+.key.neg {
+  background: var(--accent);
+}
+
+/* Search: where the next tile could land. */
+.spawnmap {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+.mini-spawn .mini-cell.is-empty {
+  background: #fff;
+}
+
+.spawn {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  border-radius: 12%;
+  background: rgb(var(--tone) / calc(var(--a) * 34%));
+  font-variant-numeric: tabular-nums;
+  line-height: 1.15;
+}
+
+.spawn.neg {
+  --tone: 217 105 79;
+}
+
+.spawn.pos {
+  --tone: 75 115 181;
+}
+
+.spawn-two {
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.mini-spawn {
+  width: 232px;
+}
+
+.spawn-tag {
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  padding: 0 4px;
+  border-radius: 4px;
+  background: var(--accent);
+  color: #fff;
+  font: 600 10px/1.5 var(--hand);
+}
+
+.spawn-notes p {
+  margin: 0 0 10px;
+  color: #45516a;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Networks: attention and activations. */
+.net-why {
+  display: flex;
+  gap: 28px;
+  flex-wrap: wrap;
+}
+
+.net-why figure {
+  width: 180px;
+  margin: 0;
+}
+
+.net-why .mini-lg {
+  width: 180px;
+}
+
+.net-why figcaption {
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.mini-heat .mini-cell[style]::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: 14%;
+  box-shadow: inset 0 0 0 calc(var(--h) * 4px) rgb(217 105 79 / calc(25% + var(--h) * 75%));
+  pointer-events: none;
+}
+
+.activations {
+  display: block;
+  width: 180px;
+  height: 180px;
+  padding: 8px;
+  border-radius: 8px;
+  background: var(--well);
+}
+
+.activations rect {
+  fill: var(--blue);
+}
+
+/* ---- How it decides (the hand-drawn explainer) ------------------------------ */
+
+.explainer {
+  grid-column: 1 / -1;
+  padding: 28px 32px 24px;
+  border-radius: 18px;
+  background: var(--well);
+  box-shadow: 0 1px 2px rgb(29 39 56 / 5%), 0 10px 30px rgb(29 39 56 / 5%);
+}
+
+.explainer-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.explainer-sub {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.explainer-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.icon-button {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+#ex-play {
+  font-size: 11px;
+  letter-spacing: -0.1em;
+}
+
+.icon-button:hover {
+  background: var(--cell-bg);
+  color: var(--ink);
+}
+
+.ex-steps {
+  display: flex;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ex-steps button {
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 1.5px solid var(--line);
+  border-radius: 50%;
+  background: none;
+  color: var(--muted);
+  font: 600 13px var(--hand);
+  cursor: pointer;
+}
+
+.ex-steps button[aria-current="true"] {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: #fff;
+}
+
+.ex-caption {
+  display: flex;
+  gap: 14px;
+  align-items: baseline;
+  max-width: 68ch;
+  min-height: 4.6em;
+  margin: 18px 0 4px;
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+.ex-num {
+  flex: none;
+  color: var(--accent);
+  font: 600 26px/1 var(--hand);
+}
+
+.ex-figure svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.ex-empty {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 720 / 320;
+  margin: 0;
+  color: var(--muted);
+  font-family: var(--hand);
+}
+
+/* Drawing vocabulary. Every element belongs to a step and appears with it;
+   strokes draw themselves on. */
+.ex-figure [data-stage] {
+  opacity: 0;
+  transition: opacity 450ms ease;
+}
+
+.ex-figure [data-stage].on {
+  opacity: 1;
+}
+
+.ex-figure .draw {
+  stroke-dasharray: 1 1;
+  stroke-dashoffset: 1;
+  transition: stroke-dashoffset 900ms cubic-bezier(0.5, 0, 0.3, 1);
+}
+
+.ex-figure .on .draw,
+.ex-figure .draw.on {
+  stroke-dashoffset: 0;
+}
+
+.ex-figure .ink {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.ex-figure .faint {
+  fill: none;
+  stroke: #c3ccd8;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+}
+
+.ex-figure .arrow .tip {
+  opacity: 0;
+  transition: opacity 200ms ease 650ms;
+}
+
+.ex-figure .arrow.on .tip {
+  opacity: 1;
+}
+
+.ex-figure .dashed .draw {
+  stroke-dasharray: 0.025 0.02;
+  stroke-dashoffset: 0;
+}
+
+.ex-figure .accent {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2.2;
+  stroke-linecap: round;
+}
+
+.ex-figure .blue {
+  fill: none;
+  stroke: var(--blue);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+
+.ex-figure .pair {
+  fill: none;
+  stroke: var(--blue);
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-opacity: 0.55;
+}
+
+.ex-figure .snake {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-opacity: 0.5;
+  transition-duration: 1800ms;
+}
+
+.ex-figure .ghost {
+  fill: none;
+  stroke: #c9d1dc;
+  stroke-width: 1.4;
+  stroke-dasharray: 4 4;
+}
+
+.ex-figure .mini-well {
+  fill: #dfe5ed;
+}
+
+.ex-figure .mini-cell.spawned {
+  stroke: var(--accent);
+  stroke-width: 2.5;
+}
+
+.ex-figure .mini-num {
+  font: 700 10px var(--font);
+  letter-spacing: -0.03em;
+}
+
+.ex-figure .note {
+  fill: var(--ink);
+  font-family: var(--hand);
+}
+
+.ex-figure .label {
+  fill: var(--muted);
+  font-family: var(--font);
+  font-weight: 600;
+}
+
+.ex-figure .value {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.ex-figure .is-best,
+.ex-figure .accent-text {
+  fill: var(--accent);
+}
+
+.ex-figure .faint-text {
+  fill: var(--muted);
+}
+
+.ex-figure .neg-text {
+  fill: var(--accent);
+}
+
+.ex-figure .probe-cell {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2.5;
+}
+
+.ex-figure .plane rect {
+  fill: #fff;
+  stroke: var(--ink);
+  stroke-width: 1.2;
+}
+
+.ex-figure .plane .on {
+  fill: var(--blue);
+}
+
+.ex-figure .plane .off {
+  fill: #c9d1dc;
+}
+
+.ex-figure .plane-tag {
+  fill: var(--muted);
+  font: 600 10px var(--font);
+}
+
+.ex-figure .grid rect {
+  fill: #dfe5ee;
+}
+
+.ex-figure .dense rect {
+  fill: var(--blue);
+}
+
+.ex-figure .dense .dense-well {
+  fill: #fff;
+  fill-opacity: 1;
+  stroke: #d5dce6;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ex-figure [data-stage],
+  .ex-figure .draw,
+  .ex-figure .arrow .tip {
+    transition: none;
+  }
+}
+
+/* ---- Narrower screens ---------------------------------------------------------- */
+
+@media (max-width: 940px) {
+  .watch {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+  }
+
+  .mind,
+  .explainer {
+    width: 100%;
+    max-width: 640px;
+  }
+}
+
+@media (max-width: 560px) {
+  .watch {
+    gap: 36px;
+    padding-top: 24px;
+  }
+
+  .future-row {
+    gap: 6px;
+  }
+
+  .future {
+    padding: 7px;
+    gap: 6px;
+    border-radius: 10px;
+  }
+
+  .future-name {
+    font-size: 13px;
+  }
+
+  .future-value {
+    font-size: 14px;
+  }
+
+  .future-gap {
+    font-size: 11px;
+  }
+
+  .lookups,
+  .spawnmap {
+    flex-direction: column;
+  }
+
+  .explainer {
+    padding: 20px 16px 16px;
+    border-radius: 14px;
+  }
+
+  .explainer-head {
+    flex-direction: column;
+  }
+
+  .ex-caption {
+    font-size: 15px;
+    min-height: 7em;
+  }
+
+  /* The camera: draw at 720/420 of the width and pan between steps. */
+  .ex-figure {
+    margin: 0 -16px;
+    padding-bottom: 10px;
+    overflow: hidden;
+  }
+
+  .ex-figure svg {
+    width: calc(100% * 720 / 420);
+    transform: translateX(var(--pan, 0));
+    transition: transform 700ms cubic-bezier(0.5, 0, 0.3, 1);
+  }
+
+  .mind-head {
+    flex-direction: column;
+    gap: 2px;
+  }
+}

@@ -37,6 +37,16 @@ export class NTupleNetwork {
     return 0;
   }
 
+  // The 32 lookups behind value(): which cells each one read and the weight
+  // it found. `pattern` is which of the four shapes it is (0..3).
+  features(board) {
+    return this.cells.map((cells, f) => ({
+      cells,
+      pattern: this.tableOf[f],
+      weight: this.#weight(f, board),
+    }));
+  }
+
   value(board) {
     let total = 0;
     for (let f = 0; f < this.cells.length; f++) total += this.#weight(f, board);
@@ -60,7 +70,7 @@ export class NTupleNetwork {
 export function ntupleAgent(net) {
   return {
     kind: "value",
-    decide(board) {
+    decide(board, { detail = false } = {}) {
       const values = [null, null, null, null];
       let action = -1;
       let bestAfter = null;
@@ -73,7 +83,14 @@ export function ntupleAgent(net) {
           bestAfter = after;
         }
       }
-      return { action, values, heat: bestAfter && net.heat(bestAfter) };
+      const decision = { action, values, heat: bestAfter && net.heat(bestAfter) };
+      if (detail) {
+        decision.detail = {
+          gained: DIRECTIONS.map((dir) => move(board, dir).gained),
+          features: DIRECTIONS.map((dir) => (values[dir] === null ? null : net.features(move(board, dir).after))),
+        };
+      }
+      return decision;
     },
   };
 }

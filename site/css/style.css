@@ -13,8 +13,7 @@
   --gap: calc(var(--board) * 0.03);
   --cell: calc((var(--board) - 5 * var(--gap)) / 4);
   --radius: calc(var(--cell) * 0.1);
-  --column-gap: 72px;
-  --content: calc(2 * var(--board) + var(--column-gap));
+  --content: 1040px;
   --slide: 100ms;
 }
 
@@ -65,32 +64,28 @@ select {
 /* ---- Masthead ---------------------------------------------------------- */
 
 .masthead {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 24px;
   max-width: calc(var(--content) + 32px);
   margin: 0 auto;
-  padding: 48px 16px 32px;
+  padding: 40px 16px 0;
+}
+
+.masthead-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 24px;
 }
 
 .wordmark {
-  font-size: 56px;
+  font-size: 48px;
   font-weight: 600;
   line-height: 1;
   letter-spacing: -0.05em;
 }
 
-.tagline {
-  max-width: 44ch;
-  margin: 12px 0 0;
-  color: var(--muted);
-}
-
 .links {
   display: flex;
   gap: 20px;
-  padding-top: 8px;
 }
 
 .link {
@@ -108,16 +103,41 @@ select {
   color: var(--ink);
 }
 
-/* ---- Two players side by side ------------------------------------------- */
-
-.arena {
+/* Two modes, as plain underlined tabs. */
+.tabs {
   display: flex;
-  flex-wrap: wrap;
+  gap: 28px;
+  margin-top: 28px;
+  border-bottom: 1px solid var(--line);
+}
+
+.tab {
+  margin-bottom: -1px;
+  padding: 0 0 12px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: var(--muted);
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.tab:hover {
+  color: var(--ink);
+}
+
+.tab[aria-selected="true"] {
+  border-bottom-color: var(--ink);
+  color: var(--ink);
+}
+
+/* ---- Play yourself ---------------------------------------------------------- */
+
+.play {
+  display: flex;
   justify-content: center;
-  gap: 48px var(--column-gap);
-  max-width: calc(var(--content) + 32px);
-  margin: 0 auto;
-  padding: 0 16px 64px;
+  padding: 40px 16px 80px;
 }
 
 .player {
@@ -136,15 +156,16 @@ select {
   margin-bottom: 16px;
 }
 
-.player-head h2 {
-  font-size: 22px;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-}
-
 .player-foot {
   flex-wrap: wrap;
   margin-top: 16px;
+}
+
+.hint-text {
+  min-height: 1.5em;
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 14px;
 }
 
 .scores {
@@ -168,8 +189,9 @@ select {
 
 /* Tabular figures in Inter also widen hyphens, so only numbers that change get them. */
 .score strong,
+.stat strong,
 .tile-face,
-.bar-value {
+.num {
   font-variant-numeric: tabular-nums;
 }
 
@@ -349,126 +371,6 @@ select {
   gap: 8px;
 }
 
-/* ---- AI controls --------------------------------------------------------- */
-
-.model {
-  flex: 1 1 0;
-  min-width: 0;
-}
-
-.model select {
-  width: 100%;
-  padding: 8px 28px 8px 12px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: var(--well) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23687488' stroke-width='1.5'/%3E%3C/svg%3E") no-repeat right 12px center;
-  font-weight: 600;
-  appearance: none;
-  cursor: pointer;
-}
-
-.speed {
-  display: inline-flex;
-  padding: 3px;
-  border-radius: 8px;
-  background: #e1e6ee;
-}
-
-.speed button {
-  padding: 5px 10px;
-  border: 0;
-  border-radius: 6px;
-  background: none;
-  color: var(--muted);
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.speed button[aria-checked="true"] {
-  background: var(--well);
-  color: var(--ink);
-  box-shadow: 0 1px 2px rgb(29 39 56 / 10%);
-}
-
-#ai-toggle {
-  min-width: 92px;
-}
-
-/* ---- Thinking panel -------------------------------------------------------- */
-
-.thinking {
-  margin-top: 20px;
-  border-top: 1px solid var(--line);
-  padding-top: 14px;
-}
-
-.thinking summary {
-  width: fit-content;
-  color: var(--muted);
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.thinking summary:hover {
-  color: var(--ink);
-}
-
-.thinking-label {
-  margin: 12px 0;
-  color: var(--muted);
-  font-size: 14px;
-}
-
-.bars {
-  display: grid;
-  gap: 8px;
-}
-
-.bar {
-  display: grid;
-  grid-template-columns: 64px 1fr 72px;
-  align-items: center;
-  gap: 12px;
-  font-size: 14px;
-}
-
-.bar-track {
-  height: 8px;
-  border-radius: 4px;
-  background: var(--cell-bg);
-  overflow: hidden;
-}
-
-.bar-fill {
-  display: block;
-  width: 0;
-  height: 100%;
-  border-radius: inherit;
-  background: #a6bddc;
-  transition: width 120ms ease-out;
-}
-
-.bar-value {
-  color: var(--muted);
-  text-align: right;
-}
-
-.bar.is-chosen .bar-name,
-.bar.is-chosen .bar-value {
-  color: var(--ink);
-  font-weight: 700;
-}
-
-.bar.is-chosen .bar-fill {
-  background: var(--accent);
-}
-
-.bar.is-blocked {
-  color: #a3adbd;
-}
-
 /* The heat glow sits above the tiles as an inset ring so tile colours stay
    readable while the model's attention is still visible. */
 .board-heat {
@@ -482,82 +384,6 @@ select {
     inset 0 0 0 calc(var(--h, 0) * 2px) rgb(217 105 79 / calc(var(--h, 0) * 70%)),
     0 0 calc(var(--h, 0) * 14px) rgb(217 105 79 / calc(var(--h, 0) * 25%));
   transition: box-shadow 160ms ease-out;
-}
-
-/* ---- About dialog ---------------------------------------------------------- */
-
-.about {
-  width: min(560px, calc(100vw - 32px));
-  max-height: calc(100vh - 64px);
-  padding: 32px;
-  border: 0;
-  border-radius: 14px;
-  background: var(--well);
-  color: var(--ink);
-  box-shadow: 0 24px 64px rgb(29 39 56 / 20%);
-}
-
-.about::backdrop {
-  background: rgb(29 39 56 / 35%);
-}
-
-.about h2 {
-  font-size: 26px;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-}
-
-.about h3 {
-  margin: 24px 0 8px;
-  font-size: 16px;
-  font-weight: 700;
-}
-
-.about p,
-.about dd {
-  color: #45516a;
-  line-height: 1.6;
-}
-
-.about a {
-  color: var(--ink);
-}
-
-.models {
-  margin: 0;
-}
-
-.models dt {
-  margin-top: 14px;
-  font-weight: 700;
-}
-
-.models dd {
-  margin: 2px 0 0;
-}
-
-.about-foot {
-  margin-top: 24px;
-  font-size: 14px;
-}
-
-.close {
-  float: right;
-  width: 32px;
-  height: 32px;
-  margin: -12px -12px 0 0;
-  border: 0;
-  border-radius: 50%;
-  background: none;
-  color: var(--muted);
-  font-size: 24px;
-  line-height: 1;
-  cursor: pointer;
-}
-
-.close:hover {
-  background: var(--cell-bg);
-  color: var(--ink);
 }
 
 /* ---- Small screens and touch ------------------------------------------- */
@@ -578,24 +404,15 @@ select {
 
 @media (max-width: 520px) {
   .masthead {
-    flex-direction: column;
-    gap: 16px;
-    padding-top: 32px;
+    padding-top: 28px;
   }
 
   .wordmark {
-    font-size: 44px;
+    font-size: 38px;
   }
 
   .links {
-    padding-top: 0;
-  }
-
-  .arena {
-    row-gap: 56px;
-  }
-
-  #ai-toggle {
-    flex-basis: 100%;
+    gap: 14px;
+    font-size: 14px;
   }
 }

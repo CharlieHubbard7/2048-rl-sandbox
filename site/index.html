@@ -4,35 +4,95 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Twos</title>
-    <meta name="description" content="Slide and merge tiles to reach 2048, then watch a trained model play the same tiles." />
+    <meta name="description" content="Watch five trained models play 2048 and see what each one is thinking, move by move. Or play it yourself." />
     <link rel="icon" href="favicon.svg" type="image/svg+xml" />
     <meta name="theme-color" content="#eef1f5" />
     <meta property="og:title" content="Twos" />
-    <meta property="og:description" content="Slide and merge tiles to reach 2048, then watch a trained model play the same tiles." />
+    <meta property="og:description" content="Watch five trained models play 2048 and see what each one is thinking, move by move." />
     <meta property="og:image" content="https://charliehubbard7.github.io/2048-rl-sandbox/preview.png" />
     <meta name="twitter:card" content="summary_large_image" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Shantell+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/watch.css" />
   </head>
   <body>
     <header class="masthead">
-      <div>
+      <div class="masthead-top">
         <h1 class="wordmark">Twos</h1>
-        <p class="tagline">Slide the tiles, merge equal numbers, reach 2048. A trained model plays the same tiles beside you.</p>
+        <nav class="links">
+          <a class="link" href="methodology.html">How I built it</a>
+          <a class="link" href="https://github.com/CharlieHubbard7/2048-rl-sandbox">GitHub</a>
+        </nav>
       </div>
-      <nav class="links">
-        <button type="button" class="link" id="open-about">How it works</button>
-        <a class="link" href="methodology.html">How I built it</a>
-        <a class="link" href="https://github.com/CharlieHubbard7/2048-rl-sandbox">GitHub</a>
-      </nav>
+      <div class="tabs" role="tablist" aria-label="Mode">
+        <button type="button" role="tab" class="tab" id="tab-watch" aria-controls="watch" aria-selected="true">Watch the AI</button>
+        <button type="button" role="tab" class="tab" id="tab-play" aria-controls="play" aria-selected="false" tabindex="-1">Play yourself</button>
+      </div>
     </header>
 
-    <main class="arena">
-      <section class="player" aria-labelledby="you-title">
+    <!-- ---- Watch the AI ------------------------------------------------------ -->
+    <main class="watch" id="watch" role="tabpanel" aria-labelledby="tab-watch">
+      <section class="stage" aria-label="The AI's game">
+        <div class="model-picker" id="model" role="radiogroup" aria-label="Model"></div>
+        <p class="model-blurb" id="model-blurb"></p>
+
+        <div class="stats">
+          <div class="stat"><span>Score</span><strong id="ai-score">0</strong></div>
+          <div class="stat"><span>Moves</span><strong id="ai-moves">0</strong></div>
+          <div class="stat"><span>Best tile</span><strong id="ai-best">2</strong></div>
+        </div>
+
+        <div class="board" id="ai-board" aria-label="AI board"></div>
+
+        <div class="transport">
+          <div class="pace" id="pace" role="radiogroup" aria-label="Pace">
+            <button type="button" role="radio" data-pace="step" aria-checked="true">One move</button>
+            <button type="button" role="radio" data-pace="slow" aria-checked="false">Slow</button>
+            <button type="button" role="radio" data-pace="fast" aria-checked="false">Fast</button>
+          </div>
+          <button type="button" class="button button-primary" id="ai-go">Next move</button>
+        </div>
+        <div class="transport-foot">
+          <span class="caption"><kbd>Space</kbd> to <span id="go-hint">step</span></span>
+          <button type="button" class="link" id="ai-new">New game</button>
+        </div>
+      </section>
+
+      <section class="mind" aria-labelledby="mind-title">
+        <header class="mind-head">
+          <h2 id="mind-title">What it's thinking</h2>
+          <p class="mind-meta" id="mind-meta"></p>
+        </header>
+        <p class="mind-lede" id="mind-lede"></p>
+        <div class="futures" id="futures"></div>
+        <div class="why" id="why" aria-live="polite"></div>
+      </section>
+
+      <section class="explainer" aria-labelledby="explainer-title">
+        <header class="explainer-head">
+          <div>
+            <h2 id="explainer-title">How it decides</h2>
+            <p class="explainer-sub" id="explainer-sub">Drawn with the board above.</p>
+          </div>
+          <div class="explainer-controls">
+            <button type="button" class="icon-button" id="ex-prev" aria-label="Previous step">‹</button>
+            <ol class="ex-steps" id="ex-steps"></ol>
+            <button type="button" class="icon-button" id="ex-next" aria-label="Next step">›</button>
+            <button type="button" class="icon-button" id="ex-play" aria-label="Pause the explanation">❚❚</button>
+          </div>
+        </header>
+        <p class="ex-caption" id="ex-caption"></p>
+        <div class="ex-figure" id="ex-figure"></div>
+      </section>
+    </main>
+
+    <!-- ---- Play yourself ----------------------------------------------------- -->
+    <main class="play" id="play" role="tabpanel" aria-labelledby="tab-play" hidden>
+      <section class="player" aria-label="Your game">
         <div class="player-head">
-          <h2 id="you-title">You</h2>
+          <p class="caption"><span class="for-keys">Arrow keys or WASD.</span><span class="for-touch">Swipe to move.</span></p>
           <div class="scores">
             <div class="score"><span>Score</span><strong id="you-score">0</strong></div>
             <div class="score"><span>Best</span><strong id="you-best">0</strong></div>
@@ -40,71 +100,12 @@
         </div>
         <div class="board" id="you-board" aria-label="Your board"></div>
         <div class="player-foot">
-          <p class="caption"><span class="for-keys">Use the arrow keys or WASD.</span><span class="for-touch">Swipe to move.</span></p>
+          <button type="button" class="link" id="hint">Ask the search for a hint</button>
           <button type="button" class="button" id="new-game">New game</button>
         </div>
-      </section>
-
-      <section class="player" aria-labelledby="ai-title">
-        <div class="player-head">
-          <h2 id="ai-title">AI</h2>
-          <div class="scores">
-            <div class="score"><span>Score</span><strong id="ai-score">0</strong></div>
-          </div>
-        </div>
-        <div class="board" id="ai-board" aria-label="AI board"></div>
-        <div class="player-foot">
-          <label class="model">
-            <span class="visually-hidden">Model</span>
-            <select id="model"></select>
-          </label>
-          <div class="speed" id="ai-speed" role="radiogroup" aria-label="Speed">
-            <button type="button" role="radio" data-speed="slow" aria-checked="true">Slow</button>
-            <button type="button" role="radio" data-speed="fast" aria-checked="false">Fast</button>
-          </div>
-          <button type="button" class="button button-primary" id="ai-toggle">Start</button>
-        </div>
-
-        <details class="thinking" id="thinking">
-          <summary>Show what it's thinking</summary>
-          <p class="thinking-label"></p>
-          <div class="bars"></div>
-        </details>
+        <p class="hint-text" id="hint-text" aria-live="polite"></p>
       </section>
     </main>
-
-    <dialog class="about" id="about">
-      <form method="dialog"><button class="close" aria-label="Close">×</button></form>
-      <h2>How it works</h2>
-      <p>
-        The rules are the classic ones. Each move slides every tile as far as it goes, equal tiles merge
-        once, and a 2 or a 4 appears in an empty cell. Both boards draw new tiles from the same random
-        sequence, so you and the AI share the luck as evenly as the game allows.
-      </p>
-      <h3>The models</h3>
-      <dl class="models">
-        <dt>Search + N-tuple</dt>
-        <dd>Looks a move or two ahead and asks the N-tuple network how good each possible board is.</dd>
-        <dt>N-tuple network</dt>
-        <dd>Scores boards with lookup tables it learned by playing 55,000 games against itself.</dd>
-        <dt>PPO</dt>
-        <dd>A neural network that learned how likely it should be to pick each move.</dd>
-        <dt>Deep Q-network</dt>
-        <dd>A neural network that predicts how many points each move will lead to.</dd>
-        <dt>Heuristic</dt>
-        <dd>A hand-written rule that keeps big tiles in one corner and leaves room to merge.</dd>
-      </dl>
-      <h3>What it's thinking</h3>
-      <p>
-        The bars show how the model rated each move before choosing. The glow on its board marks the tiles
-        that most influenced the decision.
-      </p>
-      <p class="about-foot">
-        Everything runs in your browser. The models were trained in Python with NumPy and PyTorch, and the
-        code is <a href="https://github.com/CharlieHubbard7/2048-rl-sandbox">on GitHub</a>. The full story is in
-        <a href="methodology.html">How I built it</a>.
-      </p>
-    </dialog>
 
     <script type="module" src="js/main.js"></script>
   </body>

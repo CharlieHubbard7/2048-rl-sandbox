@@ -1,25 +1,35 @@
 # Twos
 
-Play the sliding-tile game 2048 in your browser while a trained model plays the
-same tiles on the board next to you.
+Watch five models play the sliding-tile game 2048 and see what each one is
+thinking, move by move. Or play it yourself.
 
 **[Play it here](https://charliehubbard7.github.io/2048-rl-sandbox/)**
 
-![Your board on the left, the model's board on the right, with its move ratings open](docs/screenshot.png)
+![The AI's board on the left; on the right, the four moves it compared and a look inside the score of the one it chose](docs/screenshot.png)
 
 Five models are included, from a hand-written heuristic to reinforcement learning
 with search on top. All of them run client-side: the models were trained in Python,
 exported to small weight files, and re-implemented in plain JavaScript, with no
 build step and no runtime dependencies.
 
-## How it plays
+## How it works
 
-- The rules are the classic ones: slide, merge equal tiles once per move, a 2 (90%)
-  or 4 (10%) appears in a random empty cell, and reaching 2048 lets you keep going.
-- Both boards draw new tiles from one seeded random sequence, so you and the model
-  share the luck as evenly as the game allows. **New game** reseeds both.
-- **Show what it's thinking** opens the model's view of the current move: a rating
-  for each direction, and a glow on the tiles that most influenced the choice.
+The page opens on **Watch the AI**:
+
+- **One move / Slow / Fast.** Step through a game a move at a time (Space works
+  too), or let it play. Before every move the model's reasoning appears first, then
+  the move happens.
+- **What it's thinking** shows the four boards each move would produce, the score
+  the model gave each one on a number line, and a look inside the score: the
+  heuristic's four weighted rules, the N-tuple network's 32 table lookups, the
+  search's map of where the next tile could land, or the networks' attention and
+  hidden activations.
+- **How it decides** is a hand-drawn storyboard of the algorithm, drawn with the
+  real board and the real numbers from the current move.
+
+**Play yourself** is the classic game: slide, merge equal tiles once per move, a 2
+(90%) or 4 (10%) appears in a random empty cell, and reaching 2048 lets you keep
+going. The search will give you a hint if you ask.
 
 ## The models
 
@@ -59,6 +69,7 @@ site/              the public page: vanilla ES modules, served as-is
   js/engine.js     rules on exponent boards, with a 65,536-entry line lookup table
   js/game.js       a game with tile identities, so moves can be animated
   js/ai/           the five models, run in a web worker
+  js/watch/        the thinking panel and the hand-drawn explainer
   models/          exported weights (gzipped, int16-quantised)
 rl2048/            Python: engine, agents, training and export
 scripts/           benchmark for the browser models

@@ -80,15 +80,18 @@ export function dqnAgent(w) {
   const qValues = (board) => dense(w["head.weight"], w["head.bias"], trunk(w, board), 4);
   return {
     kind: "q",
-    decide(board, { explain = true } = {}) {
-      const q = qValues(board);
+    decide(board, { explain = true, detail = false } = {}) {
+      const hidden = trunk(w, board);
+      const q = dense(w["head.weight"], w["head.bias"], hidden, 4);
       const legal = legalMoves(board);
       const action = legal.reduce((a, b) => (q[b] > q[a] ? b : a));
-      return {
+      const decision = {
         action,
         values: DIRECTIONS.map((d) => (legal.includes(d) ? q[d] : null)),
         heat: explain ? occlusion(board, (b) => qValues(b)[action]) : null,
       };
+      if (detail) decision.detail = { hidden: Array.from(hidden), raw: Array.from(q) };
+      return decision;
     },
   };
 }
@@ -96,7 +99,7 @@ export function dqnAgent(w) {
 export function ppoAgent(w) {
   return {
     kind: "prob",
-    decide(board, { explain = true } = {}) {
+    decide(board, { explain = true, detail = false } = {}) {
       const h = trunk(w, board);
       const logits = dense(w["pi.weight"], w["pi.bias"], h, 4);
       const legal = legalMoves(board);
@@ -107,11 +110,19 @@ export function ppoAgent(w) {
       const probs = exp.map((e) => e / total);
       const action = legal.reduce((a, b) => (probs[b] > probs[a] ? b : a));
       const value = (b) => dense(w["v.weight"], w["v.bias"], trunk(w, b), 1)[0];
-      return {
+      const decision = {
         action,
         values: DIRECTIONS.map((d) => (legal.includes(d) ? probs[d] : null)),
         heat: explain ? occlusion(board, value) : null,
       };
+      if (detail) {
+        decision.detail = {
+          hidden: Array.from(h),
+          logits: Array.from(logits),
+          value: dense(w["v.weight"], w["v.bias"], h, 1)[0],
+        };
+      }
+      return decision;
     },
   };
 }
